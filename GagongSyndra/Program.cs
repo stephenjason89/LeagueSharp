@@ -45,8 +45,8 @@ namespace GagongSyndra
             Q.SetSkillshot(0.6f, 125f, float.MaxValue, false, SkillshotType.SkillshotCircle);
 
             W = new Spell(SpellSlot.W, 925);
-            W.SetSkillshot(0.25f, 190f, 1450f, false, SkillshotType.SkillshotCircle);
-
+            W.SetSkillshot(0.25f, 140f, 2000f, false, SkillshotType.SkillshotCircle);
+            //W.SetSkillshot(0.25f, 190f, 1450f, false, SkillshotType.SkillshotCircle);
             E = new Spell(SpellSlot.E, 700);
             E.SetSkillshot(0.25f, (float)(45 * 0.5), 2500, false, SkillshotType.SkillshotCone);         
 
@@ -54,7 +54,8 @@ namespace GagongSyndra
             R.SetTargetted(0.5f, 1100f);
 
             QE = new Spell(SpellSlot.E, 1292);
-            QE.SetSkillshot(0f, 60f, 1600f, false, SkillshotType.SkillshotLine);
+            QE.SetSkillshot(0f, 60f, 1300f, false, SkillshotType.SkillshotLine);
+
 
             IgniteSlot = Player.GetSpellSlot("SummonerDot");
             FlashSlot = Player.GetSpellSlot("summonerflash");
@@ -129,6 +130,9 @@ namespace GagongSyndra
             Menu.SubMenu("Rsettings").AddSubMenu(new Menu("Dont use R on", "DontR"));
             foreach (var enemy in ObjectManager.Get<Obj_AI_Hero>().Where(enemy => enemy.Team != Player.Team))
                 Menu.SubMenu("Rsettings").SubMenu("DontR").AddItem(new MenuItem("DontR" + enemy.BaseSkinName, enemy.BaseSkinName).SetValue(false));
+            Menu.SubMenu("Rsettings").AddSubMenu(new Menu("OverKill target by xx%", "okR"));
+            foreach (var enemy in ObjectManager.Get<Obj_AI_Hero>().Where(enemy => enemy.Team != Player.Team))
+                Menu.SubMenu("Rsettings").SubMenu("okR").AddItem(new MenuItem("okR" + enemy.BaseSkinName, enemy.BaseSkinName).SetValue(new Slider(0, 0, 100)));
 
             //Drawings
             Menu.AddSubMenu(new Menu("Drawings", "Drawing"));
@@ -470,24 +474,26 @@ namespace GagongSyndra
                 {
                     //R
                     UseR = Menu.Item("DontR" + enemy.BaseSkinName) != null && Menu.Item("DontR" + enemy.BaseSkinName).GetValue<bool>() == false && UR;
-                    if (UseR && R.IsReady() && Player.Distance(enemy, true) <= Math.Pow(R.Range, 2) && (DFGBuff(enemy) ? GetRDamage(enemy) * 1.2 : GetRDamage(enemy)) > enemy.Health)
+                    var okR = Menu.Item("okR" + enemy.BaseSkinName).GetValue<Slider>().Value * .01 + 1;
+                    if (UseR && R.IsReady() && Player.Distance(enemy, true) <= Math.Pow(R.Range, 2) && (DFGBuff(enemy) ? GetRDamage(enemy) * 1.2 : GetRDamage(enemy)) > enemy.Health * okR)
                     { // && Player.GetSpellDamage(RTarget, SpellSlot.Q) < RTarget.Health && Player.Spellbook.GetSpell(SpellSlot.W).Cooldown<2 
                         foreach (var spell in SpellList)
                         { // Total Combo Mana
                             totmana += Player.Spellbook.GetSpell(spell.Slot).ManaCost;
                         }
                         if ((totmana < Player.Mana || RCheck(enemy)))
-                            if (!(Player.GetSpellDamage(RTarget, SpellSlot.Q) > RTarget.Health && Player.Spellbook.GetSpell(SpellSlot.Q).CooldownExpires - Game.Time < 2 && Player.Spellbook.GetSpell(SpellSlot.Q).CooldownExpires - Game.Time >= 0 && enemy.IsStunned))
+                            if (!(Player.GetSpellDamage(enemy, SpellSlot.Q) > enemy.Health && Player.Spellbook.GetSpell(SpellSlot.Q).CooldownExpires - Game.Time < 2 && Player.Spellbook.GetSpell(SpellSlot.Q).CooldownExpires - Game.Time >= 0 && enemy.IsStunned))
                                 R.CastOnUnit(enemy); 
-                    }
-                    else if (RTarget != null && Menu.Item("HarassActiveT").GetValue<KeyBind>().Active && Player.Distance(RTarget, true) <= Math.Pow(R.Range, 2) && UseR && !fromKS)
-                    {
-                        R.CastOnUnit(RTarget);
                     }
                     //Ignite
                     if (Player.Distance(enemy, true) <= 600 * 600 && GetIgniteDamage(enemy) > enemy.Health)
                         Player.SummonerSpellbook.CastSpell(IgniteSlot, enemy);
-                }     
+                }
+            //R cast override
+            if (!RTarget.HasBuff("UndyingRage") && !RTarget.HasBuff("JudicatorIntervention") && RTarget.IsValid && !RTarget.IsDead && RTarget != null && Menu.Item("HarassActiveT").GetValue<KeyBind>().Active && Player.Distance(RTarget, true) <= Math.Pow(R.Range, 2) && UseR && !fromKS)
+            {
+                R.CastOnUnit(RTarget);
+            }
 
             //Use E
             if (UE && E.IsReady() && Environment.TickCount - W.LastCastAttemptT > Game.Ping + 150)
@@ -501,14 +507,14 @@ namespace GagongSyndra
                 }
             
             //Use QE
-            if (UQE && WTarget == null && QETarget != null && Q.IsReady() && E.IsReady())
+            if (UQE && QETarget != null && Q.IsReady() && E.IsReady())
             {
                 UseQE(QETarget);
             }
                 
 
             //Use W1
-            if (UW && QETarget != null && W.IsReady() && Player.Spellbook.GetSpell(SpellSlot.W).ToggleState == 1 )
+            if (UW && WTarget != null && W.IsReady() && Player.Spellbook.GetSpell(SpellSlot.W).ToggleState == 1)
             {
                 Vector3 gObjectPos = GetGrabableObjectPos(false);
 
@@ -519,11 +525,11 @@ namespace GagongSyndra
             }
 
             //Use W2
-            if (UW && W.IsReady() && Player.Spellbook.GetSpell(SpellSlot.W).ToggleState != 1 && QETarget != null && !(OrbManager.WObject(false).Name.ToLower() == "heimertblue"))
+            if (UW && W.IsReady() && Player.Spellbook.GetSpell(SpellSlot.W).ToggleState != 1 && WTarget != null && !(OrbManager.WObject(false).Name.ToLower() == "heimertblue"))
             {
                 W.UpdateSourcePosition(OrbManager.WObject(false).ServerPosition);
                 PredictionOutput Pos = W.GetPrediction(WTarget, true);
-                if (Pos.Hitchance >= HitChance.High)
+                if (Pos.Hitchance >= HitChance.High) //&& Player.Distance(Pos.UnitPosition, true) < Math.Pow(W.Range, 2)
                     W.Cast(Pos.CastPosition);
             }
         }
@@ -586,7 +592,6 @@ namespace GagongSyndra
             }
         }
 
-
         private static void UseQE2(Obj_AI_Hero Target, Vector3 Pos)
         {
             if (Player.Distance(Pos, true) <= Math.Pow(E.Range, 2))
@@ -605,7 +610,7 @@ namespace GagongSyndra
                 }
             }
         }
-
+     
         private static void Drawing_OnDraw(EventArgs args)
         {
           
