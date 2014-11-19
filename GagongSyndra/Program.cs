@@ -67,7 +67,7 @@ namespace GagongSyndra
             SpellList.Add(R);
             
             //Base menu
-            Menu = new Menu("Stephen", "Stephen", true);
+            Menu = new Menu("GagongSyndra", "GagongSyndra", true);
 
             //SimpleTs
             Menu.AddSubMenu(new Menu("SimpleTs", "SimpleTs"));
@@ -241,13 +241,13 @@ namespace GagongSyndra
         {
             if (!Menu.Item("AntiGap").GetValue<bool>()) return;
 
-            if (E.IsReady() && Player.Distance(gapcloser.Sender, true) <= Math.Pow(E.Range, 2))
+            if (E.IsReady() && Player.Distance(gapcloser.Sender, true) <= Math.Pow(QE.Range, 2))
             {
                 if (Q.IsReady())
                 {
                     UseQE((Obj_AI_Hero)gapcloser.Sender);
                 }
-                else
+                else if (Player.Distance(gapcloser.Sender, true) <= Math.Pow(E.Range, 2))
                     E.Cast(gapcloser.End);
             }
         }
@@ -450,6 +450,7 @@ namespace GagongSyndra
             var QETarget = SimpleTs.GetTarget(QE.Range, SimpleTs.DamageType.Magical);
             bool UseR = false;
             var totmana = 0d;
+            
             //Use DFG
             if (RTarget != null && GetComboDamage(RTarget, UQ, UW, UE, UR) + GetIgniteDamage(RTarget) > RTarget.Health)
             {
@@ -467,7 +468,7 @@ namespace GagongSyndra
             {
                 UseQ(QTarget);
             }
-
+            
             //R, Ignite 
             foreach (var enemy in ObjectManager.Get<Obj_AI_Hero>().Where(enemy => enemy.Team != Player.Team))
                 if (!enemy.HasBuff("UndyingRage") && !enemy.HasBuff("JudicatorIntervention") && enemy.IsValid && !enemy.IsDead)
@@ -489,8 +490,9 @@ namespace GagongSyndra
                     if (Player.Distance(enemy, true) <= 600 * 600 && GetIgniteDamage(enemy) > enemy.Health)
                         Player.SummonerSpellbook.CastSpell(IgniteSlot, enemy);
                 }
+            
             //R cast override
-            if (!RTarget.HasBuff("UndyingRage") && !RTarget.HasBuff("JudicatorIntervention") && RTarget.IsValid && !RTarget.IsDead && RTarget != null && Menu.Item("HarassActiveT").GetValue<KeyBind>().Active && Player.Distance(RTarget, true) <= Math.Pow(R.Range, 2) && UseR && !fromKS)
+            if (RTarget != null && !RTarget.HasBuff("UndyingRage") && !RTarget.HasBuff("JudicatorIntervention") && RTarget.IsValid && !RTarget.IsDead && RTarget != null && Menu.Item("HarassActiveT").GetValue<KeyBind>().Active && Player.Distance(RTarget, true) <= Math.Pow(R.Range, 2) && UseR && !fromKS)
             {
                 R.CastOnUnit(RTarget);
             }
