@@ -461,15 +461,18 @@ namespace GagongSyndra
             var totmana = 0d;
             
             //Use DFG
-            if (RTarget != null && GetComboDamage(RTarget, UQ, UW, UE, UR) + GetIgniteDamage(RTarget) > RTarget.Health)
+            if (DFG.IsReady() && RTarget != null && GetComboDamage(RTarget, UQ, UW, UE, UR) + GetIgniteDamage(RTarget) > RTarget.Health)
             {
                 //DFG
-                if (DFG.IsReady() && Player.Distance(RTarget, true) <= Math.Pow(DFG.Range, 2) && GetComboDamage(RTarget, UQ, UW, UE, false, false) + GetIgniteDamage(QTarget) < RTarget.Health)
+                if (Player.Distance(RTarget, true) <= Math.Pow(DFG.Range, 2) && GetComboDamage(RTarget, UQ, UW, UE, false, false) + GetIgniteDamage(QTarget) < RTarget.Health)
                     if((UR && R.IsReady()) || (UQ && Q.IsReady())) DFG.Cast(RTarget);
             }
-            else if (RTarget != null && Menu.Item("HarassActiveT").GetValue<KeyBind>().Active && Player.Distance(RTarget, true) <= Math.Pow(R.Range, 2) && !fromKS)
+            
+            //Harass Combo Key override
+            if (RTarget != null && Menu.Item("HarassActive").GetValue<KeyBind>().Active && Menu.Item("ComboActive").GetValue<KeyBind>().Active && Player.Distance(RTarget, true) <= Math.Pow(R.Range, 2))
             {
                     DFG.Cast(QTarget);
+                    if (Menu.Item("DontR" + RTarget.BaseSkinName) != null && Menu.Item("DontR" + RTarget.BaseSkinName).GetValue<bool>() == false && UR) R.CastOnUnit(RTarget);
             }       
 
             //Use Q
@@ -500,12 +503,6 @@ namespace GagongSyndra
                         Player.SummonerSpellbook.CastSpell(IgniteSlot, enemy);
                 }
             
-            //R cast override
-            
-            if (RTarget != null && !RTarget.HasBuff("UndyingRage") && !RTarget.HasBuff("JudicatorIntervention") && RTarget.IsValid && !RTarget.IsDead && RTarget != null && Menu.Item("HarassActiveT").GetValue<KeyBind>().Active && Player.Distance(RTarget, true) <= Math.Pow(R.Range, 2) && !fromKS)
-            {
-                if(Menu.Item("DontR" + RTarget.BaseSkinName) != null && Menu.Item("DontR" + RTarget.BaseSkinName).GetValue<bool>() == false && UR) R.CastOnUnit(RTarget);
-            }
 
             //Use E
             if (UE && E.IsReady() && Environment.TickCount - W.LastCastAttemptT > Game.Ping + 150)
@@ -517,7 +514,6 @@ namespace GagongSyndra
                         else if (Player.Distance(enemy, true) <= Math.Pow(QE.Range, 2))
                             UseE(enemy);
                 }
-            
             //Use QE
             if (UQE && QETarget != null && Q.IsReady() && E.IsReady())
             {
@@ -526,11 +522,11 @@ namespace GagongSyndra
                 
 
             //Use W1
-            if (UW && WTarget != null && W.IsReady() && Player.Spellbook.GetSpell(SpellSlot.W).ToggleState == 1)
+            if (UW && QETarget != null && W.IsReady() && Player.Spellbook.GetSpell(SpellSlot.W).ToggleState == 1)
             {
                 Vector3 gObjectPos = GetGrabableObjectPos(false);
 
-                if (gObjectPos.To2D().IsValid() && Environment.TickCount - Q.LastCastAttemptT > 600 + Game.Ping && Environment.TickCount - E.LastCastAttemptT > 600 + Game.Ping && Environment.TickCount - W.LastCastAttemptT > 600 + Game.Ping)
+                if (gObjectPos.To2D().IsValid() && Environment.TickCount - Q.LastCastAttemptT > 750 + Game.Ping && Environment.TickCount - E.LastCastAttemptT > 750 + Game.Ping && Environment.TickCount - W.LastCastAttemptT > 600 + Game.Ping)
                 {
                     W.Cast(gObjectPos);
                 }
@@ -562,7 +558,6 @@ namespace GagongSyndra
                 Q.Cast(Pos.CastPosition);
         }
 
-
         private static void UseE(Obj_AI_Hero Target)
         {
             foreach (var orb in OrbManager.GetOrbs(true).Where(orb => orb.To2D().IsValid() && Player.Distance(orb, true) < Math.Pow(E.Range, 2)))
@@ -579,50 +574,21 @@ namespace GagongSyndra
 
         private static void UseQE(Obj_AI_Hero Target)
         {
-            if (!Q.IsReady() || !E.IsReady()) return;
+            if (!Q.IsReady() || !E.IsReady() || Player.Spellbook.GetSpell(SpellSlot.Q).ManaCost + Player.Spellbook.GetSpell(SpellSlot.E).ManaCost>Player.Mana) return;
             Vector3 SPos = Prediction.GetPrediction(Target, 0.53f).UnitPosition;
-            if (Player.Distance(SPos, true) > Math.Pow(700, 2))
+            if (Player.Distance(SPos, true) <= Math.Pow(QE.Range, 2))
             {
                 QE.Delay = 0.53f;
-                QE.From = Player.ServerPosition + Vector3.Normalize(Target.ServerPosition - Player.ServerPosition) * 700;
                 var TPos = QE.GetPrediction(Target);
                 if (TPos.Hitchance >= HitChance.High)
                 {
                     Vector3 Pos = Player.ServerPosition + Vector3.Normalize(TPos.UnitPosition - Player.ServerPosition) * 700;
-                    UseQE2(Target, Pos);
-                }
-            }
-            else
-            {
-                Q.Width = 60f;
-                var Pos = Q.GetPrediction(Target);
-                if (Pos.Hitchance >= HitChance.High)
-                {
-                   
-                    UseQE2(Target, Pos.UnitPosition);
+                    Q.Cast(Pos);
+                    UseE(Target);
                 }
             }
         }
 
-        private static void UseQE2(Obj_AI_Hero Target, Vector3 Pos)
-        {
-            if (Player.Distance(Pos, true) <= Math.Pow(E.Range, 2))
-            {
-                Vector3 SP = Pos + Vector3.Normalize(Player.ServerPosition - Pos) * 100f;
-                Vector3 EP = Pos + Vector3.Normalize(Pos - Player.ServerPosition) * 592;
-                QE.Delay = E.Delay + Player.ServerPosition.Distance(Pos) / E.Speed;
-                QE.UpdateSourcePosition(Pos);
-                var PPo = QE.GetPrediction(Target).UnitPosition.To2D().ProjectOn(SP.To2D(), EP.To2D());
-                if (PPo.IsOnSegment && PPo.SegmentPoint.Distance(Target, true) <= Math.Pow(QE.Width + Target.BoundingRadius, 2))
-                {
-                    int Delay = 280 - (int)(Player.Distance(Pos) / 2.5) + Menu.Item("QEDelay").GetValue<Slider>().Value;
-                    Utility.DelayAction.Add(Math.Max(0, Delay), () => E.Cast(Pos));
-                    QE.LastCastAttemptT = Environment.TickCount;
-                    Q.Cast(Pos);
-                }
-            }
-        }
-     
         private static void Drawing_OnDraw(EventArgs args)
         {
           
