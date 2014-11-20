@@ -399,7 +399,7 @@ namespace GagongSyndra
                         Menu.Item("UseQEKS").GetValue<bool>(), //QE
                         true //fromKS
                         ); 
-                        Game.PrintChat("QWERKS " + enemy.Name);
+                        //Game.PrintChat("QWERKS " + enemy.Name);
                     }
                     else if ((GetComboDamage(enemy, false, false, Menu.Item("UseEKS").GetValue<bool>(), Menu.Item("UseRKS").GetValue<bool>(), false) > enemy.Health || GetComboDamage(enemy, false, Menu.Item("UseWKS").GetValue<bool>(), Menu.Item("UseEKS").GetValue<bool>(), false, false) > enemy.Health) && Player.Distance(enemy, true) <= Math.Pow(QE.Range, 2))
                     {
@@ -410,7 +410,7 @@ namespace GagongSyndra
                         Menu.Item("UseQEKS").GetValue<bool>(), //QE
                         true //fromKS
                         ); 
-                        Game.PrintChat("QEKS " + enemy.Name);
+                        //Game.PrintChat("QEKS " + enemy.Name);
                     }
                     //Flash Kill
                     bool UseFlash = Menu.Item("FKT" + enemy.BaseSkinName) != null && Menu.Item("FKT" + enemy.BaseSkinName).GetValue<bool>() == true;
