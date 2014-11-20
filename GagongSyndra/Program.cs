@@ -278,7 +278,7 @@ namespace GagongSyndra
         {
             var damage = 0d;
             var combomana = 0d;
-
+            bool useR = Menu.Item("DontR" + enemy.BaseSkinName) != null && Menu.Item("DontR" + enemy.BaseSkinName).GetValue<bool>() == false;
             //Add Q Damage
             if (Q.IsReady() && UQ)
             {
@@ -288,7 +288,7 @@ namespace GagongSyndra
             }
 
             //Add R Damage
-            if (R.IsReady() && UR)
+            if (R.IsReady() && UR && useR)
             {
                 combomana += Player.Spellbook.GetSpell(SpellSlot.R).ManaCost;
                 if (combomana <= Player.Mana) damage += GetRDamage(enemy);
@@ -399,7 +399,7 @@ namespace GagongSyndra
                         Menu.Item("UseQEKS").GetValue<bool>(), //QE
                         true //fromKS
                         ); 
-                        //Game.PrintChat("QWERKS " + enemy.Name);
+                        Game.PrintChat("QWERKS " + enemy.Name);
                     }
                     else if ((GetComboDamage(enemy, false, false, Menu.Item("UseEKS").GetValue<bool>(), Menu.Item("UseRKS").GetValue<bool>(), false) > enemy.Health || GetComboDamage(enemy, false, Menu.Item("UseWKS").GetValue<bool>(), Menu.Item("UseEKS").GetValue<bool>(), false, false) > enemy.Health) && Player.Distance(enemy, true) <= Math.Pow(QE.Range, 2))
                     {
@@ -410,10 +410,12 @@ namespace GagongSyndra
                         Menu.Item("UseQEKS").GetValue<bool>(), //QE
                         true //fromKS
                         ); 
-                        //Game.PrintChat("QEKS " + enemy.Name);
+                        Game.PrintChat("QEKS " + enemy.Name);
                     }
                     //Flash Kill
                     bool UseFlash = Menu.Item("FKT" + enemy.BaseSkinName) != null && Menu.Item("FKT" + enemy.BaseSkinName).GetValue<bool>() == true;
+                    bool useR = Menu.Item("DontR" + enemy.BaseSkinName) != null && Menu.Item("DontR" + enemy.BaseSkinName).GetValue<bool>() == false;
+                    bool Rflash = GetComboDamage(enemy, Menu.Item("UseQKS").GetValue<bool>(), false, Menu.Item("UseEKS").GetValue<bool>(), false, false) < enemy.Health;
                     PredictionOutput ePos = R.GetPrediction(enemy);
                     if ((FlashSlot != SpellSlot.Unknown || Player.SummonerSpellbook.CanUseSpell(FlashSlot) == SpellState.Ready) && UseFlash
                         && Player.Distance(ePos.UnitPosition, true) <= Math.Pow(Q.Range + 25f + 395, 2) && Player.Distance(ePos.UnitPosition, true) > Math.Pow(Q.Range + 25f + 200, 2))
@@ -425,16 +427,23 @@ namespace GagongSyndra
                         if (NearbyE <= Menu.Item("MaxE").GetValue<Slider>().Value)
                         {
                             Vector3 FlashPos = Player.ServerPosition - Vector3.Normalize(Player.ServerPosition - ePos.UnitPosition) * 400;
-                            Player.SummonerSpellbook.CastSpell(FlashSlot, FlashPos);
-                            //Use Ult after flash if can't be killed by QE
-                            if (GetComboDamage(enemy, Menu.Item("UseQKS").GetValue<bool>(), false, Menu.Item("UseEKS").GetValue<bool>(), false, false) < enemy.Health)
-                                UseSpells(false, //Q
-                                false, //W
-                                false, //E
-                                Menu.Item("UseRKS").GetValue<bool>(), //R
-                                false, //QE
-                                true //fromKS
-                                );
+                            if (Rflash) { 
+                                if (useR)
+                                {   //Use Ult after flash if can't be killed by QE
+                                    Player.SummonerSpellbook.CastSpell(FlashSlot, FlashPos);
+                                    UseSpells(false, //Q
+                                    false, //W
+                                    false, //E
+                                    Menu.Item("UseRKS").GetValue<bool>(), //R
+                                    false, //QE
+                                    true //fromKS
+                                    );
+                                }
+                            }
+                            else
+                            {   //Q & E after flash
+                                Player.SummonerSpellbook.CastSpell(FlashSlot, FlashPos);
+                            }
                         }
                     }
 
@@ -492,9 +501,10 @@ namespace GagongSyndra
                 }
             
             //R cast override
-            if (RTarget != null && !RTarget.HasBuff("UndyingRage") && !RTarget.HasBuff("JudicatorIntervention") && RTarget.IsValid && !RTarget.IsDead && RTarget != null && Menu.Item("HarassActiveT").GetValue<KeyBind>().Active && Player.Distance(RTarget, true) <= Math.Pow(R.Range, 2) && UseR && !fromKS)
+            
+            if (RTarget != null && !RTarget.HasBuff("UndyingRage") && !RTarget.HasBuff("JudicatorIntervention") && RTarget.IsValid && !RTarget.IsDead && RTarget != null && Menu.Item("HarassActiveT").GetValue<KeyBind>().Active && Player.Distance(RTarget, true) <= Math.Pow(R.Range, 2) && !fromKS)
             {
-                R.CastOnUnit(RTarget);
+                if(Menu.Item("DontR" + RTarget.BaseSkinName) != null && Menu.Item("DontR" + RTarget.BaseSkinName).GetValue<bool>() == false && UR) R.CastOnUnit(RTarget);
             }
 
             //Use E
