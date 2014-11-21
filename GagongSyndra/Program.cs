@@ -42,19 +42,19 @@ namespace GagongSyndra
             
             //Spells data
             Q = new Spell(SpellSlot.Q, 800);
-            Q.SetSkillshot(0.35f, 125f, float.MaxValue, false, SkillshotType.SkillshotCircle);
+            Q.SetSkillshot(0.7f, 125f, float.MaxValue, false, SkillshotType.SkillshotCircle);
 
-            W = new Spell(SpellSlot.W, 925);
-            W.SetSkillshot(0.5f, 140f, 1750f, false, SkillshotType.SkillshotCircle);
-            //W.SetSkillshot(0.25f, 190f, 1450f, false, SkillshotType.SkillshotCircle);
+            W = new Spell(SpellSlot.W, 930);
+            W.SetSkillshot(0.25f, 190f, 1450f, false, SkillshotType.SkillshotCircle);
+
             E = new Spell(SpellSlot.E, 700);
-            E.SetSkillshot(0.5f, (float)(45 * 0.5), 2500, false, SkillshotType.SkillshotCone);         
+            E.SetSkillshot(0.25f, (float)(45 * 0.5), 2500, false, SkillshotType.SkillshotCone);         
 
             R = new Spell(SpellSlot.R, 675);
             R.SetTargetted(0.5f, 1100f);
 
             QE = new Spell(SpellSlot.E, 1292);
-            QE.SetSkillshot(0f, 60f, 1300f, false, SkillshotType.SkillshotLine);
+            QE.SetSkillshot(0.95f, 60f, 1600f, false, SkillshotType.SkillshotLine);
 
 
             IgniteSlot = Player.GetSpellSlot("SummonerDot");
@@ -172,6 +172,7 @@ namespace GagongSyndra
             Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawR", "R Range").SetValue(new Circle(false, Color.FromArgb(100, 255, 0, 255))));
             Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawQE", "QE Range").SetValue(new Circle(true, Color.FromArgb(100, 255, 0, 255))));
             Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawQEC", "QE Cursor indicator").SetValue(new Circle(false, Color.FromArgb(100, 255, 0, 255))));
+            Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawQEMAP", "QE Target Parameters").SetValue(true));
 
             //Add main menu
             Menu.AddToMainMenu();
@@ -202,7 +203,7 @@ namespace GagongSyndra
             if (Menu.Item("UseQEC").GetValue<KeyBind>().Active && E.IsReady() && Q.IsReady())
                 foreach (var enemy in ObjectManager.Get<Obj_AI_Hero>().Where(enemy => enemy.Team != Player.Team && Player.Distance(enemy, true) <= Math.Pow(QE.Range, 2)))
                 {
-                   if (enemy.IsValid && !enemy.IsDead && enemy.Distance(Game.CursorPos, true) <= 150 * 150)
+                   if (enemy.IsValidTarget(QE.Range) && enemy.Distance(Game.CursorPos, true) <= 150 * 150)
                         UseQE(enemy);
                 }
 
@@ -367,7 +368,7 @@ namespace GagongSyndra
         {
             if (!Menu.Item("AntiGap").GetValue<bool>()) return;
 
-            if (E.IsReady() && Player.Distance(gapcloser.Sender, true) <= Math.Pow(QE.Range, 2))
+            if (E.IsReady() && Player.Distance(gapcloser.Sender, true) <= Math.Pow(QE.Range, 2) && gapcloser.Sender.IsValidTarget(QE.Range))
             {
                 if (Q.IsReady())
                 {
@@ -383,7 +384,7 @@ namespace GagongSyndra
         {
             if (!Menu.Item("Interrupt").GetValue<bool>()) return;
 
-            if (E.IsReady() && Player.Distance(unit, true) <= Math.Pow(E.Range, 2))
+            if (E.IsReady() && Player.Distance(unit, true) <= Math.Pow(E.Range, 2) && unit.IsValidTarget(E.Range))
             {
                 if (Q.IsReady())
                     UseQE((Obj_AI_Hero)unit);
@@ -481,7 +482,7 @@ namespace GagongSyndra
         private static void AutoKS()
         {
             foreach (var enemy in ObjectManager.Get<Obj_AI_Hero>().Where(enemy => enemy.Team != Player.Team))
-                if (!enemy.HasBuff("UndyingRage") && !enemy.HasBuff("JudicatorIntervention") && enemy.IsValid && !enemy.IsDead)
+                if (!enemy.HasBuff("UndyingRage") && !enemy.HasBuff("JudicatorIntervention") && enemy.IsValidTarget(QE.Range))
                 {
                     if (GetComboDamage(enemy, false, false, Menu.Item("UseQEKS").GetValue<bool>(), false, false) > enemy.Health && Player.Distance(enemy, true) <= Math.Pow(QE.Range, 2))
                     {
@@ -594,22 +595,27 @@ namespace GagongSyndra
                     if((UR && R.IsReady()) || (UQ && Q.IsReady())) DFG.Cast(RTarget);
             }
             
-            //Harass Combo Key override
+            //Harass Combo Key Override
             if (RTarget != null && Menu.Item("HarassActive").GetValue<KeyBind>().Active && Menu.Item("ComboActive").GetValue<KeyBind>().Active && Player.Distance(RTarget, true) <= Math.Pow(R.Range, 2))
             {
                     DFG.Cast(QTarget);
                     if (Menu.Item("DontR" + RTarget.BaseSkinName) != null && Menu.Item("DontR" + RTarget.BaseSkinName).GetValue<bool>() == false && UR) R.CastOnUnit(RTarget);
-            }       
+            }
+            //Use QE
+            if (UQE && QETarget != null && Q.IsReady() && (E.IsReady() || Player.Spellbook.GetSpell(SpellSlot.E).CooldownExpires - Game.Time < 1) && Player.Spellbook.GetSpell(SpellSlot.Q).ManaCost + Player.Spellbook.GetSpell(SpellSlot.E).ManaCost <= Player.Mana)
+            {
+                UseQE(QETarget);
+            } 
 
             //Use Q
-            if (UQ && QTarget != null)
+            else if (UQ && QTarget != null)
             {
                 UseQ(QTarget);
             }
-            
+           
             //R, Ignite 
             foreach (var enemy in ObjectManager.Get<Obj_AI_Hero>().Where(enemy => enemy.Team != Player.Team))
-                if (!enemy.HasBuff("UndyingRage") && !enemy.HasBuff("JudicatorIntervention") && enemy.IsValid && !enemy.IsDead)
+                if (!enemy.HasBuff("UndyingRage") && !enemy.HasBuff("JudicatorIntervention") && enemy.IsValidTarget(R.Range))
                 {
                     //R
                     UseR = Menu.Item("DontR" + enemy.BaseSkinName) != null && Menu.Item("DontR" + enemy.BaseSkinName).GetValue<bool>() == false && UR;
@@ -628,24 +634,17 @@ namespace GagongSyndra
                     if (Player.Distance(enemy, true) <= 600 * 600 && GetIgniteDamage(enemy) > enemy.Health)
                         Player.SummonerSpellbook.CastSpell(IgniteSlot, enemy);
                 }
-            
 
             //Use E
             if (UE && E.IsReady() && Environment.TickCount - W.LastCastAttemptT > Game.Ping + 150)
                 foreach (var enemy in ObjectManager.Get<Obj_AI_Hero>().Where(enemy => enemy.Team != Player.Team))
                 {
-                    if(enemy.IsValid && !enemy.IsDead)
+                    if(enemy.IsValidTarget(E.Range))
                         if (GetComboDamage(enemy, UQ, UW, UE, UR) > enemy.Health && Player.Distance(enemy, true) <= Math.Pow(E.Range, 2))
                             E.Cast(enemy);
                         else if (Player.Distance(enemy, true) <= Math.Pow(QE.Range, 2))
                             UseE(enemy);
                 }
-            //Use QE
-            if (UQE && QETarget != null && Q.IsReady() && E.IsReady())
-            {
-                UseQE(QETarget);
-            }
-                
 
             //Use W1
             if (UW && QETarget != null && W.IsReady() && Player.Spellbook.GetSpell(SpellSlot.W).ToggleState == 1)
@@ -663,7 +662,7 @@ namespace GagongSyndra
             {
                 W.UpdateSourcePosition(OrbManager.WObject(false).ServerPosition);
                 PredictionOutput Pos = W.GetPrediction(WTarget, true);
-                if (Pos.Hitchance >= HitChance.High) //&& Player.Distance(Pos.UnitPosition, true) < Math.Pow(W.Range, 2)
+                if (Pos.Hitchance >= HitChance.High)
                     W.Cast(Pos.CastPosition);
             }
         }
@@ -700,23 +699,22 @@ namespace GagongSyndra
         
         private static void UseQE(Obj_AI_Hero Target)
         {
-            if (!Q.IsReady() || !E.IsReady() || Player.Spellbook.GetSpell(SpellSlot.Q).ManaCost + Player.Spellbook.GetSpell(SpellSlot.E).ManaCost>Player.Mana) return;
-            if (Player.Distance(Target, true) > Math.Pow(E.Range, 2)) QE.Delay = 0.60f; 
-            Vector3 SPos = Prediction.GetPrediction(Target, QE.Delay).UnitPosition;
+            if (!Q.IsReady() || !E.IsReady()) return;
+            Vector3 SPos = Prediction.GetPrediction(Target, Q.Delay + E.Delay + (Player.Distance(Target)-E.Range) / QE.Speed).UnitPosition;
             if (Player.Distance(SPos, true) > Math.Pow(E.Range, 2))
             {
+                Vector3 orb = Player.ServerPosition + Vector3.Normalize(SPos - Player.ServerPosition) * E.Range;
+                QE.Delay = Q.Delay + E.Delay + Player.Distance(orb) / E.Speed;
                 var TPos = QE.GetPrediction(Target);
-                if (TPos.Hitchance >= HitChance.High)
+                if (TPos.Hitchance >= HitChance.Medium)
                 {
-                    Vector3 Pos = Player.ServerPosition + Vector3.Normalize(TPos.UnitPosition - Player.ServerPosition) * 700;
-                    UseQE2(Target,Pos);
+                    UseQE2(Target, orb);
                 }
             }
             else
             {
-                Q.Width = 50f;
                 PredictionOutput Pos = Q.GetPrediction(Target, true);
-                if (Pos.Hitchance >= HitChance.High)
+                if (Pos.Hitchance >= HitChance.VeryHigh)
                     UseQE2(Target, Pos.UnitPosition);
             }
         }
@@ -741,17 +739,14 @@ namespace GagongSyndra
         }
         private static void Drawing_OnDraw(EventArgs args)
         {
-            
-                
-
             var menuItem = Menu.Item("DrawQE").GetValue<Circle>();
             if (menuItem.Active) Utility.DrawCircle(Player.Position, QE.Range, menuItem.Color);
-
             menuItem = Menu.Item("DrawQEC").GetValue<Circle>();
             foreach (var enemy in ObjectManager.Get<Obj_AI_Hero>().Where(enemy => enemy.Team != Player.Team))
             {
                 if (enemy.IsVisible && !enemy.IsDead)
                 { //Draw Combo Damage to Enemy HP bars
+                    
                     Vector2 hpBarPos = enemy.HPBarPosition;
                     hpBarPos.X += 45;
                     hpBarPos.Y += 18;
@@ -764,8 +759,9 @@ namespace GagongSyndra
                         barcolor = Color.SpringGreen;
                         if (Menu.Item("Gank").GetValue<bool>())
                         {
-                            Vector2 myPos = Drawing.WorldToScreen(ObjectManager.Player.ServerPosition);
-                            Vector3 Pos = Player.ServerPosition + Vector3.Normalize(enemy.ServerPosition - Player.ServerPosition) * 350;
+                            Vector3 Pos = Player.ServerPosition + Vector3.Normalize(enemy.ServerPosition - Player.ServerPosition) * 100;
+                            Vector2 myPos = Drawing.WorldToScreen(Pos);
+                            Pos = Player.ServerPosition + Vector3.Normalize(enemy.ServerPosition - Player.ServerPosition) * 350;
                             Vector2 ePos = Drawing.WorldToScreen(Pos);
                             Drawing.DrawLine(myPos.X, myPos.Y, ePos.X, ePos.Y, 1, barcolor);
                         }
@@ -792,7 +788,28 @@ namespace GagongSyndra
 
             if (Menu.Item("AutoKST").GetValue<KeyBind>().Active) Drawing.DrawText(Drawing.Width * 0.90f, Drawing.Height * 0.66f, System.Drawing.Color.DarkGreen, "Auto KS : On");
             else Drawing.DrawText(Drawing.Width * 0.90f, Drawing.Height * 0.66f, System.Drawing.Color.DarkRed, "Auto KS : Off");
-            
+            // Draw QE MAP
+            if (Menu.Item("DrawQEMAP").GetValue<bool>()) { 
+                var QETarget = SimpleTs.GetTarget(QE.Range, SimpleTs.DamageType.Magical);
+                Vector3 SPos = Prediction.GetPrediction(QETarget, Q.Delay + E.Delay + (Player.Distance(QETarget) - E.Range) / QE.Speed).UnitPosition;
+                if (Player.Distance(SPos, true) > Math.Pow(E.Range, 2) && (E.IsReady() || Player.Spellbook.GetSpell(SpellSlot.E).CooldownExpires - Game.Time < 2) && Player.Spellbook.GetSpell(SpellSlot.E).Level>0)
+                {
+                    Color color = Color.Red;
+                    Vector3 orb = Player.ServerPosition + Vector3.Normalize(SPos - Player.ServerPosition) * E.Range;
+                    QE.Delay = Q.Delay + E.Delay + Player.Distance(orb) / E.Speed;
+                    var TPos = QE.GetPrediction(QETarget);
+                    if (TPos.Hitchance >= HitChance.Medium) color = Color.Green;
+                    Vector3 Pos = Player.ServerPosition + Vector3.Normalize(TPos.UnitPosition - Player.ServerPosition) * 700;
+                    Utility.DrawCircle(Pos, Q.Width, color);
+                    Utility.DrawCircle(TPos.UnitPosition, Q.Width / 2, color);
+                    Vector3 SP1 = Pos + Vector3.Normalize(Player.ServerPosition - Pos) * 100f;
+                    Vector2 SP = Drawing.WorldToScreen(SP1);
+                    Vector3 EP1 = Pos + Vector3.Normalize(Pos - Player.ServerPosition) * 592;
+                    Vector2 EP = Drawing.WorldToScreen(EP1);
+                    Drawing.DrawLine(SP.X, SP.Y, EP.X, EP.Y, 2, color);
+
+                }
+            }
         }
     }
 }
