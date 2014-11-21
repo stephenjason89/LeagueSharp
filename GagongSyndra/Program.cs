@@ -42,13 +42,13 @@ namespace GagongSyndra
             
             //Spells data
             Q = new Spell(SpellSlot.Q, 800);
-            Q.SetSkillshot(0.6f, 125f, float.MaxValue, false, SkillshotType.SkillshotCircle);
+            Q.SetSkillshot(0.35f, 125f, float.MaxValue, false, SkillshotType.SkillshotCircle);
 
             W = new Spell(SpellSlot.W, 925);
-            W.SetSkillshot(0.25f, 140f, 2000f, false, SkillshotType.SkillshotCircle);
+            W.SetSkillshot(0.5f, 140f, 1750f, false, SkillshotType.SkillshotCircle);
             //W.SetSkillshot(0.25f, 190f, 1450f, false, SkillshotType.SkillshotCircle);
             E = new Spell(SpellSlot.E, 700);
-            E.SetSkillshot(0.25f, (float)(45 * 0.5), 2500, false, SkillshotType.SkillshotCone);         
+            E.SetSkillshot(0.5f, (float)(45 * 0.5), 2500, false, SkillshotType.SkillshotCone);         
 
             R = new Spell(SpellSlot.R, 675);
             R.SetTargetted(0.5f, 1100f);
@@ -96,7 +96,36 @@ namespace GagongSyndra
             Menu.SubMenu("Harass").AddItem(new MenuItem("HarassMana", "Only Harass if mana >").SetValue(new Slider(0, 0, 100)));
             Menu.SubMenu("Harass").AddItem(new MenuItem("HarassActive", "Harass").SetValue(new KeyBind("C".ToCharArray()[0], KeyBindType.Press)));
             Menu.SubMenu("Harass").AddItem(new MenuItem("HarassActiveT", "Harass (toggle)!").SetValue(new KeyBind("Y".ToCharArray()[0], KeyBindType.Toggle,true)));
-            
+
+            //Farming menu:
+            Menu.AddSubMenu(new Menu("Farm", "Farm"));
+            Menu.SubMenu("Farm").AddItem(new MenuItem("UseQFarm", "Use Q").SetValue(new StringList(new[] { "Freeze", "LaneClear", "Both", "No" }, 2)));
+            Menu.SubMenu("Farm")
+            .AddItem(
+            new MenuItem("UseWFarm", "Use W").SetValue(
+            new StringList(new[] { "Freeze", "LaneClear", "Both", "No" }, 1)));
+            Menu.SubMenu("Farm")
+            .AddItem(
+            new MenuItem("UseEFarm", "Use E").SetValue(
+            new StringList(new[] { "Freeze", "LaneClear", "Both", "No" }, 3)));
+            Menu.SubMenu("Farm")
+            .AddItem(
+            new MenuItem("FreezeActive", "Freeze!").SetValue(
+            new KeyBind(Menu.Item("Farm").GetValue<KeyBind>().Key, KeyBindType.Press)));
+            Menu.SubMenu("Farm")
+            .AddItem(
+            new MenuItem("LaneClearActive", "LaneClear!").SetValue(
+            new KeyBind(Menu.Item("LaneClear").GetValue<KeyBind>().Key, KeyBindType.Press)));
+            //JungleFarm menu:
+            Menu.AddSubMenu(new Menu("JungleFarm", "JungleFarm"));
+            Menu.SubMenu("JungleFarm").AddItem(new MenuItem("UseQJFarm", "Use Q").SetValue(true));
+            Menu.SubMenu("JungleFarm").AddItem(new MenuItem("UseWJFarm", "Use W").SetValue(true));
+            Menu.SubMenu("JungleFarm").AddItem(new MenuItem("UseEJFarm", "Use E").SetValue(true));
+            Menu.SubMenu("JungleFarm")
+            .AddItem(
+            new MenuItem("JungleFarmActive", "JungleFarm!").SetValue(
+            new KeyBind(Menu.Item("LaneClear").GetValue<KeyBind>().Key, KeyBindType.Press)));
+
             //Auto KS
             Menu.AddSubMenu(new Menu("Auto KS", "AutoKS"));
             Menu.SubMenu("AutoKS").AddItem(new MenuItem("UseQKS", "Use Q").SetValue(true));
@@ -118,6 +147,7 @@ namespace GagongSyndra
             Menu.AddSubMenu(new Menu("Misc", "Misc"));
             Menu.SubMenu("Misc").AddItem(new MenuItem("AntiGap", "Anti Gap Closer").SetValue(true));
             Menu.SubMenu("Misc").AddItem(new MenuItem("Interrupt", "Auto Interrupt Spells").SetValue(true));
+            Menu.SubMenu("Misc").AddItem(new MenuItem("Gank", "Gankable Enemy Indicator").SetValue(true));
 
             //QE Setting
             Menu.AddSubMenu(new Menu("QE Settings", "QEsettings"));
@@ -192,7 +222,14 @@ namespace GagongSyndra
             {
                 AutoKS();
             }
-            
+            //Farm
+            if (!Menu.Item("ComboActive").GetValue<KeyBind>().Active) { 
+                var lc = Menu.Item("LaneClearActive").GetValue<KeyBind>().Active;
+                if (lc || Menu.Item("FreezeActive").GetValue<KeyBind>().Active)
+                    Farm(lc);
+                if (Menu.Item("JungleFarmActive").GetValue<KeyBind>().Active)
+                    JungleFarm();
+            }
         }
 
         private static void Combo()
@@ -214,6 +251,95 @@ namespace GagongSyndra
                       false,                               //R
                       Menu.Item("UseQEH").GetValue<bool>() //QE 
                       );
+        }
+        private static void Farm(bool laneClear)
+        {
+            if (!Orbwalking.CanMove(40)) return;
+            var rangedMinionsQ = MinionManager.GetMinions(ObjectManager.Player.ServerPosition, Q.Range + Q.Width + 30,
+            MinionTypes.Ranged);
+            var allMinionsQ = MinionManager.GetMinions(ObjectManager.Player.ServerPosition, Q.Range + Q.Width + 30,
+            MinionTypes.All);
+            var rangedMinionsW = MinionManager.GetMinions(ObjectManager.Player.ServerPosition, W.Range + W.Width + 30,
+            MinionTypes.Ranged);
+            var allMinionsW = MinionManager.GetMinions(ObjectManager.Player.ServerPosition, W.Range + W.Width + 30,
+            MinionTypes.All);
+            var useQi = Menu.Item("UseQFarm").GetValue<StringList>().SelectedIndex;
+            var useWi = Menu.Item("UseWFarm").GetValue<StringList>().SelectedIndex;
+            var useEi = Menu.Item("UseEFarm").GetValue<StringList>().SelectedIndex;
+            var useQ = (laneClear && (useQi == 1 || useQi == 2)) || (!laneClear && (useQi == 0 || useQi == 2));
+            var useW = (laneClear && (useWi == 1 || useWi == 2)) || (!laneClear && (useWi == 0 || useWi == 2));
+            var useE = (laneClear && (useEi == 1 || useEi == 2)) || (!laneClear && (useEi == 0 || useEi == 2));
+            if (useQ && Q.IsReady())
+                if (laneClear)
+                {
+                    var fl1 = Q.GetCircularFarmLocation(rangedMinionsQ, Q.Width);
+                    var fl2 = Q.GetCircularFarmLocation(allMinionsQ, Q.Width);
+                    if (fl1.MinionsHit >= 3)
+                    {
+                        Q.Cast(fl1.Position);
+                    }
+                    else if (fl2.MinionsHit >= 2 || allMinionsQ.Count == 1)
+                    {
+                        Q.Cast(fl2.Position);
+                    }
+                }
+                else
+                    foreach (var minion in allMinionsQ)
+                        if (!Orbwalking.InAutoAttackRange(minion) &&
+                        minion.Health < 0.75 * Player.GetSpellDamage(minion, SpellSlot.Q))
+                            Q.Cast(minion);
+            if (useW && W.IsReady() && allMinionsW.Count > 3)
+            {
+                if (laneClear)
+                {
+                    if (Player.Spellbook.GetSpell(SpellSlot.W).ToggleState == 1)
+                    {
+                        //WObject
+                        var gObjectPos = GetGrabableObjectPos(false);
+                        if (gObjectPos.To2D().IsValid() && Environment.TickCount - W.LastCastAttemptT > Game.Ping + 150)
+                        {
+                            W.Cast(gObjectPos);
+                        }
+                    }
+                    else if (Player.Spellbook.GetSpell(SpellSlot.W).ToggleState != 1)
+                    {
+                        var fl1 = Q.GetCircularFarmLocation(rangedMinionsW, W.Width);
+                        var fl2 = Q.GetCircularFarmLocation(allMinionsW, W.Width);
+                        if (fl1.MinionsHit >= 3 && W.InRange(fl1.Position.To3D()))
+                        {
+                            W.Cast(fl1.Position);
+                        }
+                        else if (fl2.MinionsHit >= 1 && W.InRange(fl2.Position.To3D()) && fl1.MinionsHit <= 2)
+                        {
+                            W.Cast(fl2.Position);
+                        }
+                    }
+                }
+            }
+        }
+        private static void JungleFarm()
+        {
+            var useQ = Menu.Item("UseQJFarm").GetValue<bool>();
+            var useW = Menu.Item("UseWJFarm").GetValue<bool>();
+            var useE = Menu.Item("UseEJFarm").GetValue<bool>();
+            var mobs = MinionManager.GetMinions(ObjectManager.Player.ServerPosition, W.Range, MinionTypes.All,
+            MinionTeam.Neutral, MinionOrderTypes.MaxHealth);
+            if (mobs.Count > 0)
+            {
+                var mob = mobs[0];
+                if (Q.IsReady() && useQ)
+                {
+                    Q.Cast(mob);
+                }
+                if (W.IsReady() && useW && Environment.TickCount - Q.LastCastAttemptT > 800)
+                {
+                    W.Cast(mob);
+                }
+                if (useE && E.IsReady())
+                {
+                    E.Cast(mob);
+                }
+            }
         }
 
         private static void Obj_AI_Base_OnProcessSpellCast(Obj_AI_Base sender, GameObjectProcessSpellCastEventArgs args)
@@ -571,27 +697,53 @@ namespace GagongSyndra
                         E.Cast(orb);                
                 }
         }
-
+        
         private static void UseQE(Obj_AI_Hero Target)
         {
             if (!Q.IsReady() || !E.IsReady() || Player.Spellbook.GetSpell(SpellSlot.Q).ManaCost + Player.Spellbook.GetSpell(SpellSlot.E).ManaCost>Player.Mana) return;
-            Vector3 SPos = Prediction.GetPrediction(Target, 0.53f).UnitPosition;
-            if (Player.Distance(SPos, true) <= Math.Pow(QE.Range, 2))
+            if (Player.Distance(Target, true) > Math.Pow(E.Range, 2)) QE.Delay = 0.60f; 
+            Vector3 SPos = Prediction.GetPrediction(Target, QE.Delay).UnitPosition;
+            if (Player.Distance(SPos, true) > Math.Pow(E.Range, 2))
             {
-                QE.Delay = 0.53f;
                 var TPos = QE.GetPrediction(Target);
                 if (TPos.Hitchance >= HitChance.High)
                 {
                     Vector3 Pos = Player.ServerPosition + Vector3.Normalize(TPos.UnitPosition - Player.ServerPosition) * 700;
+                    UseQE2(Target,Pos);
+                }
+            }
+            else
+            {
+                Q.Width = 50f;
+                PredictionOutput Pos = Q.GetPrediction(Target, true);
+                if (Pos.Hitchance >= HitChance.High)
+                    UseQE2(Target, Pos.UnitPosition);
+            }
+        }
+        private static void UseQE2(Obj_AI_Hero Target, Vector3 Pos)
+        {
+            if (Player.Distance(Pos, true) <= Math.Pow(E.Range, 2))
+            {
+                Vector3 SP = Pos + Vector3.Normalize(Player.ServerPosition - Pos) * 100f;
+                Vector3 EP = Pos + Vector3.Normalize(Pos - Player.ServerPosition) * 592;
+                QE.Delay = E.Delay + Player.ServerPosition.Distance(Pos) / E.Speed;
+                QE.UpdateSourcePosition(Pos);
+                var PPo = QE.GetPrediction(Target).UnitPosition.To2D().ProjectOn(SP.To2D(), EP.To2D());
+                if (PPo.IsOnSegment && PPo.SegmentPoint.Distance(Target, true) <= Math.Pow(QE.Width + Target.BoundingRadius, 2))
+                {
+                    int Delay = 280 - (int)(Player.Distance(Pos) / 2.5) + Menu.Item("QEDelay").GetValue<Slider>().Value;
+                    Utility.DelayAction.Add(Math.Max(0, Delay), () => E.Cast(Pos));
+                    QE.LastCastAttemptT = Environment.TickCount;
                     Q.Cast(Pos);
                     UseE(Target);
                 }
             }
         }
-
         private static void Drawing_OnDraw(EventArgs args)
         {
-          
+            
+                
+
             var menuItem = Menu.Item("DrawQE").GetValue<Circle>();
             if (menuItem.Active) Utility.DrawCircle(Player.Position, QE.Range, menuItem.Color);
 
@@ -608,8 +760,18 @@ namespace GagongSyndra
                     if (PercentHPleft < 0) PercentHPleft = 0;
                     double comboXPos = hpBarPos.X - 36 + (107 * PercentHPleft);
                     var barcolor = Color.SeaShell;
-                    if (combodamage + Player.GetSpellDamage(enemy, SpellSlot.Q) + Player.GetAutoAttackDamage(enemy)*2 > enemy.Health) barcolor = Color.SpringGreen;
+                    if (combodamage + Player.GetSpellDamage(enemy, SpellSlot.Q) + Player.GetAutoAttackDamage(enemy) * 2 > enemy.Health) { 
+                        barcolor = Color.SpringGreen;
+                        if (Menu.Item("Gank").GetValue<bool>())
+                        {
+                            Vector2 myPos = Drawing.WorldToScreen(ObjectManager.Player.ServerPosition);
+                            Vector3 Pos = Player.ServerPosition + Vector3.Normalize(enemy.ServerPosition - Player.ServerPosition) * 350;
+                            Vector2 ePos = Drawing.WorldToScreen(Pos);
+                            Drawing.DrawLine(myPos.X, myPos.Y, ePos.X, ePos.Y, 1, barcolor);
+                        }
+                    }
                     Drawing.DrawLine((float)comboXPos, hpBarPos.Y, (float)comboXPos, (float)hpBarPos.Y + 5, 2, barcolor);
+                    
                 }
                 
                 //Draw QE to cursor circle
