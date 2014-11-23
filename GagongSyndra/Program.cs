@@ -148,7 +148,6 @@ namespace GagongSyndra
             Menu.AddSubMenu(new Menu("Misc", "Misc"));
             Menu.SubMenu("Misc").AddItem(new MenuItem("AntiGap", "Anti Gap Closer").SetValue(true));
             Menu.SubMenu("Misc").AddItem(new MenuItem("Interrupt", "Auto Interrupt Spells").SetValue(true));
-            Menu.SubMenu("Misc").AddItem(new MenuItem("Gank", "Gankable Enemy Indicator").SetValue(true));
             Menu.SubMenu("Misc").AddItem(new MenuItem("Packets", "Packet Casting").SetValue(false));
 
             //QE Settings
@@ -176,6 +175,8 @@ namespace GagongSyndra
             Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawQE", "QE Range").SetValue(new Circle(true, Color.FromArgb(100, 255, 0, 255))));
             Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawQEC", "QE Cursor indicator").SetValue(new Circle(false, Color.FromArgb(100, 255, 0, 255))));
             Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawQEMAP", "QE Target Parameters").SetValue(true));
+            Menu.SubMenu("Drawing").AddItem(new MenuItem("Gank", "Gankable Enemy Indicator").SetValue(true));
+            Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawHPFill", "After Combo HP Fill").SetValue(true));
 
             //Add main menu
             Menu.AddToMainMenu();
@@ -768,27 +769,37 @@ namespace GagongSyndra
                     hpBarPos.X += 45;
                     hpBarPos.Y += 18;
                     var combodamage = GetComboDamage(enemy, Menu.Item("UseQ").GetValue<bool>(), Menu.Item("UseW").GetValue<bool>(), Menu.Item("UseE").GetValue<bool>(), Menu.Item("UseR").GetValue<bool>());
-                    var PercentHPleft = (enemy.Health-combodamage) / enemy.MaxHealth ;
-                    if (PercentHPleft < 0) PercentHPleft = 0;
-                    double comboXPos = hpBarPos.X - 36 + (107 * PercentHPleft);
-                    var barcolor = Color.SeaShell;
+                    var PercentHPleftAfterCombo = (enemy.Health - combodamage) / enemy.MaxHealth;
+                    var PercentHPleft = enemy.Health / enemy.MaxHealth;
+                    if (PercentHPleftAfterCombo < 0) PercentHPleftAfterCombo = 0;
+                    double comboXPos = hpBarPos.X - 36 + (107 * PercentHPleftAfterCombo);
+                    double currentHPXPos = hpBarPos.X - 36 + (107 * PercentHPleft);
+                    var barcolor = Color.FromArgb(100, 0, 200, 0);
+                    var barcolorline = Color.SeaShell;
                     if (combodamage + Player.GetSpellDamage(enemy, SpellSlot.Q) + Player.GetAutoAttackDamage(enemy) * 2 > enemy.Health)
-                    { 
-                        barcolor = Color.SpringGreen;
+                    {
+                        barcolor = Color.FromArgb(100, 255, 200, 0);
+                        barcolorline = Color.SpringGreen;
                         if (Menu.Item("Gank").GetValue<bool>() )
                         {
                             var linecolor = barcolor;
-                            if (GetComboDamage(enemy, Menu.Item("UseQ").GetValue<bool>(), Menu.Item("UseW").GetValue<bool>(), Menu.Item("UseE").GetValue<bool>(), false) > enemy.Health) linecolor=Color.Red;
+                            if (GetComboDamage(enemy, Menu.Item("UseQ").GetValue<bool>(), Menu.Item("UseW").GetValue<bool>(), Menu.Item("UseE").GetValue<bool>(), false) > enemy.Health) linecolor = Color.FromArgb(150, 255, 0, 0);
                             Vector3 Pos = Player.Position + Vector3.Normalize(enemy.Position - Player.Position) * 100;
                             Vector2 myPos = Drawing.WorldToScreen(Pos);
                             Pos = Player.Position + Vector3.Normalize(enemy.Position - Player.Position) * 350;
                             Vector2 ePos = Drawing.WorldToScreen(Pos);
                             Drawing.DrawLine(myPos.X, myPos.Y, ePos.X, ePos.Y, 1, linecolor);
-                            
                         }
                     }
-                    Drawing.DrawLine((float)comboXPos, hpBarPos.Y, (float)comboXPos, (float)hpBarPos.Y + 5, 2, barcolor);
-                    
+                    Drawing.DrawLine((float)comboXPos, hpBarPos.Y, (float)comboXPos, (float)hpBarPos.Y + 5, 1, barcolorline);
+                    if (Menu.Item("DrawHPFill").GetValue<bool>())
+                    {
+                        var diff = currentHPXPos - comboXPos;
+                        for (int i = 0; i < diff; i++)
+                        {
+                            Drawing.DrawLine((float)comboXPos + (float)i, hpBarPos.Y + 2, (float)comboXPos + (float)i, (float)hpBarPos.Y + 10, 1, barcolor);
+                        }
+                    }
                 }
                 
                 //Draw QE to cursor circle
@@ -804,10 +815,10 @@ namespace GagongSyndra
             }
 
             // Dashboard Indicators
-            if (Menu.Item("HarassActiveT").GetValue<KeyBind>().Active) Drawing.DrawText(Drawing.Width * 0.90f, Drawing.Height * 0.68f, System.Drawing.Color.DarkGreen, "Auto Harass : On");
+            if (Menu.Item("HarassActiveT").GetValue<KeyBind>().Active) Drawing.DrawText(Drawing.Width * 0.90f, Drawing.Height * 0.68f, System.Drawing.Color.Yellow, "Auto Harass : On");
             else Drawing.DrawText(Drawing.Width * 0.90f, Drawing.Height * 0.68f, System.Drawing.Color.DarkRed, "Auto Harass : Off");
 
-            if (Menu.Item("AutoKST").GetValue<KeyBind>().Active) Drawing.DrawText(Drawing.Width * 0.90f, Drawing.Height * 0.66f, System.Drawing.Color.DarkGreen, "Auto KS : On");
+            if (Menu.Item("AutoKST").GetValue<KeyBind>().Active) Drawing.DrawText(Drawing.Width * 0.90f, Drawing.Height * 0.66f, System.Drawing.Color.Yellow, "Auto KS : On");
             else Drawing.DrawText(Drawing.Width * 0.90f, Drawing.Height * 0.66f, System.Drawing.Color.DarkRed, "Auto KS : Off");
             // Draw QE MAP
             if (Menu.Item("DrawQEMAP").GetValue<bool>()) { 
