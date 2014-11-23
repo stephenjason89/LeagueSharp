@@ -15,7 +15,7 @@ namespace GagongSyndra
         private static Obj_AI_Hero Player = ObjectManager.Player;
 
         //Create spells
-        public static List<Spell> SpellList = new List<Spell>();
+        private static List<Spell> SpellList = new List<Spell>();
         private static Spell Q;
         private static Spell W;
         private static Spell E;
@@ -38,7 +38,6 @@ namespace GagongSyndra
         static void Game_OnGameLoad(EventArgs args)
         {
             if (Player.BaseSkinName != ChampName) return;
-            
             
             //Spells data
             Q = new Spell(SpellSlot.Q, 800);
@@ -187,7 +186,6 @@ namespace GagongSyndra
             AntiGapcloser.OnEnemyGapcloser += AntiGapcloser_OnEnemyGapcloser;
             Interrupter.OnPossibleToInterrupt += Interrupter_OnPossibleToInterrupt;
             Orbwalking.BeforeAttack += Orbwalking_BeforeAttack;
-            
 
             Game.PrintChat("Gagong Syndra Loaded!");
         }
@@ -774,15 +772,19 @@ namespace GagongSyndra
                     if (PercentHPleft < 0) PercentHPleft = 0;
                     double comboXPos = hpBarPos.X - 36 + (107 * PercentHPleft);
                     var barcolor = Color.SeaShell;
-                    if (combodamage + Player.GetSpellDamage(enemy, SpellSlot.Q) + Player.GetAutoAttackDamage(enemy) * 2 > enemy.Health) { 
+                    if (combodamage + Player.GetSpellDamage(enemy, SpellSlot.Q) + Player.GetAutoAttackDamage(enemy) * 2 > enemy.Health)
+                    { 
                         barcolor = Color.SpringGreen;
-                        if (Menu.Item("Gank").GetValue<bool>())
+                        if (Menu.Item("Gank").GetValue<bool>() )
                         {
-                            Vector3 Pos = Player.ServerPosition + Vector3.Normalize(enemy.ServerPosition - Player.ServerPosition) * 100;
+                            var linecolor = barcolor;
+                            if (GetComboDamage(enemy, Menu.Item("UseQ").GetValue<bool>(), Menu.Item("UseW").GetValue<bool>(), Menu.Item("UseE").GetValue<bool>(), false) > enemy.Health) linecolor=Color.Red;
+                            Vector3 Pos = Player.Position + Vector3.Normalize(enemy.Position - Player.Position) * 100;
                             Vector2 myPos = Drawing.WorldToScreen(Pos);
-                            Pos = Player.ServerPosition + Vector3.Normalize(enemy.ServerPosition - Player.ServerPosition) * 350;
+                            Pos = Player.Position + Vector3.Normalize(enemy.Position - Player.Position) * 350;
                             Vector2 ePos = Drawing.WorldToScreen(Pos);
-                            Drawing.DrawLine(myPos.X, myPos.Y, ePos.X, ePos.Y, 1, barcolor);
+                            Drawing.DrawLine(myPos.X, myPos.Y, ePos.X, ePos.Y, 1, linecolor);
+                            
                         }
                     }
                     Drawing.DrawLine((float)comboXPos, hpBarPos.Y, (float)comboXPos, (float)hpBarPos.Y + 5, 2, barcolor);
@@ -814,16 +816,16 @@ namespace GagongSyndra
                 if (Player.Distance(SPos, true) > Math.Pow(E.Range, 2) && (E.IsReady() || Player.Spellbook.GetSpell(SpellSlot.E).CooldownExpires - Game.Time < 2) && Player.Spellbook.GetSpell(SpellSlot.E).Level>0)
                 {
                     Color color = Color.Red;
-                    Vector3 orb = Player.ServerPosition + Vector3.Normalize(SPos - Player.ServerPosition) * E.Range;
+                    Vector3 orb = Player.Position + Vector3.Normalize(SPos - Player.Position) * E.Range;
                     QE.Delay = Q.Delay + E.Delay + Player.Distance(orb) / E.Speed;
                     var TPos = QE.GetPrediction(QETarget);
                     if (TPos.Hitchance >= HitChance.Medium) color = Color.Green;
-                    Vector3 Pos = Player.ServerPosition + Vector3.Normalize(TPos.UnitPosition - Player.ServerPosition) * 700;
+                    Vector3 Pos = Player.Position + Vector3.Normalize(TPos.UnitPosition - Player.Position) * 700;
                     Utility.DrawCircle(Pos, Q.Width, color);
                     Utility.DrawCircle(TPos.UnitPosition, Q.Width / 2, color);
-                    Vector3 SP1 = Pos + Vector3.Normalize(Player.ServerPosition - Pos) * 100f;
+                    Vector3 SP1 = Pos + Vector3.Normalize(Player.Position - Pos) * 100f;
                     Vector2 SP = Drawing.WorldToScreen(SP1);
-                    Vector3 EP1 = Pos + Vector3.Normalize(Pos - Player.ServerPosition) * 592;
+                    Vector3 EP1 = Pos + Vector3.Normalize(Pos - Player.Position) * 592;
                     Vector2 EP = Drawing.WorldToScreen(EP1);
                     Drawing.DrawLine(SP.X, SP.Y, EP.X, EP.Y, 2, color);
 
