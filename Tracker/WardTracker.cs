@@ -439,10 +439,7 @@ namespace Tracker
             }
             var wardObject = (Obj_AI_Base) sender;
 
-            if (sender.IsAlly)
-            {
-                return;
-            }
+           
 
             foreach (var wardData in PosibleWards)
             {

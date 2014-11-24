@@ -12,6 +12,7 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <PreBuildEvent />
+    <OutputPath>bin\Release</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -24,30 +25,31 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x86</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>bin\Release</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="LeagueSharp">
-      <HintPath>C:\Users\Andre\Google Drive\lsharp\System\LeagueSharp.dll</HintPath>
+      <HintPath>D:\Games\League of Legends\LeagueSharp\\System\LeagueSharp.dll</HintPath>
     </Reference>
     <Reference Include="LeagueSharp.Common">
-      <HintPath>C:\Users\Andre\Google Drive\lsharp\System\LeagueSharp.Common.dll</HintPath>
+      <HintPath>D:\Games\League of Legends\LeagueSharp\\System\LeagueSharp.Common.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX">
-      <HintPath>C:\Users\Andre\Google Drive\lsharp\System\SharpDX.dll</HintPath>
+      <HintPath>D:\Games\League of Legends\LeagueSharp\\System\SharpDX.dll</HintPath>
     </Reference>
     <Reference Include="SharpDX.Direct3D9">
-      <HintPath>C:\Users\Andre\Google Drive\lsharp\System\SharpDX.Direct3D9.dll</HintPath>
+      <HintPath>D:\Games\League of Legends\LeagueSharp\\System\SharpDX.Direct3D9.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -122,6 +124,27 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\Minimap_Ward_Pink_Enemy.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ganks_hater\activated.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ganks_hater\danger.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ganks_hater\deactivated.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ganks_hater\hev_logon.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ganks_hater\hev_shutdown.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ganks_hater\voice_off.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ganks_hater\voice_on.wav" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

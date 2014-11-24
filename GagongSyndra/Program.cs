@@ -5,7 +5,7 @@ using LeagueSharp;
 using LeagueSharp.Common;
 using SharpDX;
 using Color = System.Drawing.Color;
-
+using System.Media;
 
 namespace GagongSyndra
 {
@@ -13,6 +13,7 @@ namespace GagongSyndra
     {
         private const string ChampName = "Syndra";
         private static Obj_AI_Hero Player = ObjectManager.Player;
+        private static SoundPlayer welcome = new SoundPlayer(GagongSyndra.Properties.Resources.GagongSyndraWelcome);
 
         //Create spells
         private static List<Spell> SpellList = new List<Spell>();
@@ -25,6 +26,7 @@ namespace GagongSyndra
         //Summoner spells
         public static SpellSlot IgniteSlot;
         public static SpellSlot FlashSlot;
+        private static int FlashLastCast = 0;
 
         //Items
         public static Items.Item DFG;
@@ -182,7 +184,7 @@ namespace GagongSyndra
 
             //Add main menu
             Menu.AddToMainMenu();
-
+            playSound(welcome);
             Game.OnGameUpdate += Game_OnGameUpdate;
             Drawing.OnDraw += Drawing_OnDraw;
             Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
@@ -193,7 +195,17 @@ namespace GagongSyndra
             Game.PrintChat("Gagong Syndra Loaded!");
         }
 
+        private static void playSound(SoundPlayer sound)
+        {
+            try
+            {
+                sound.Play();
+            }
+            catch 
+            {
 
+            }
+        }
         static void Game_OnGameUpdate(EventArgs args)
         {
             if (Player.IsDead) return;
@@ -491,7 +503,7 @@ namespace GagongSyndra
         private static void AutoKS()
         {
             foreach (var enemy in ObjectManager.Get<Obj_AI_Hero>().Where(enemy => enemy.Team != Player.Team))
-                if (!enemy.HasBuff("UndyingRage") && !enemy.HasBuff("JudicatorIntervention") && enemy.IsValidTarget(QE.Range))
+                if (!enemy.HasBuff("UndyingRage") && !enemy.HasBuff("JudicatorIntervention") && enemy.IsValidTarget(QE.Range) && Environment.TickCount - FlashLastCast > 650 + Game.Ping)
                 {
                     if (GetComboDamage(enemy, false, false, Menu.Item("UseQEKS").GetValue<bool>(), false, false) > enemy.Health && Player.Distance(enemy, true) <= Math.Pow(QE.Range, 2))
                     {
@@ -590,6 +602,7 @@ namespace GagongSyndra
                                 {   //Q & E after flash
                                     Player.SummonerSpellbook.CastSpell(FlashSlot, FlashPos);
                                 }
+                                FlashLastCast = Environment.TickCount;
                             }
                         }
                     }
@@ -676,6 +689,7 @@ namespace GagongSyndra
 
                 if (gObjectPos.To2D().IsValid() && Environment.TickCount - Q.LastCastAttemptT > 750 + Game.Ping && Environment.TickCount - E.LastCastAttemptT > 750 + Game.Ping && Environment.TickCount - W.LastCastAttemptT > 600 + Game.Ping)
                 {
+                    if(WTarget!=null || QETarget.IsStunned)
                     W.Cast(gObjectPos, Menu.Item("Packets").GetValue<bool>());
                 }
             }

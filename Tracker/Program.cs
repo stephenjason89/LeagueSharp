@@ -24,6 +24,7 @@ namespace Tracker
             Config = new Menu("Tracker", "Tracker", true);
             HbTracker.AttachToMenu(Config);
             WardTracker.AttachToMenu(Config);
+            GankAlerter.AttachToMenu(Config);
             Config.AddToMainMenu();
         }
     }
