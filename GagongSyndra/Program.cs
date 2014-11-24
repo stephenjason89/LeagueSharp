@@ -44,7 +44,7 @@ namespace GagongSyndra
             Q.SetSkillshot(0.73f, 125f, float.MaxValue, false, SkillshotType.SkillshotCircle);
 
             W = new Spell(SpellSlot.W, 930);
-            W.SetSkillshot(0.25f, 190f, 1450f, false, SkillshotType.SkillshotCircle);
+            W.SetSkillshot(0.25f, 140f, 1400f, false, SkillshotType.SkillshotCircle);
 
             E = new Spell(SpellSlot.E, 700);
             E.SetSkillshot(0.25f, (float)(45 * 0.5), 2500, false, SkillshotType.SkillshotCone);         
@@ -149,6 +149,7 @@ namespace GagongSyndra
             Menu.SubMenu("Misc").AddItem(new MenuItem("AntiGap", "Anti Gap Closer").SetValue(true));
             Menu.SubMenu("Misc").AddItem(new MenuItem("Interrupt", "Auto Interrupt Spells").SetValue(true));
             Menu.SubMenu("Misc").AddItem(new MenuItem("Packets", "Packet Casting").SetValue(false));
+            Menu.SubMenu("Misc").AddItem(new MenuItem("IgniteALLCD", "Only ignite if all skills on CD").SetValue(false));
 
             //QE Settings
             Menu.AddSubMenu(new Menu("QE Settings", "QEsettings"));
@@ -175,6 +176,7 @@ namespace GagongSyndra
             Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawQE", "QE Range").SetValue(new Circle(true, Color.FromArgb(100, 255, 0, 255))));
             Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawQEC", "QE Cursor indicator").SetValue(new Circle(false, Color.FromArgb(100, 255, 0, 255))));
             Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawQEMAP", "QE Target Parameters").SetValue(true));
+            Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawWMAP", "W Target Parameters").SetValue(true));
             Menu.SubMenu("Drawing").AddItem(new MenuItem("Gank", "Gankable Enemy Indicator").SetValue(true));
             Menu.SubMenu("Drawing").AddItem(new MenuItem("DrawHPFill", "After Combo HP Fill").SetValue(true));
 
@@ -614,7 +616,7 @@ namespace GagongSyndra
             }
             
             //Harass Combo Key Override
-            if (RTarget != null && Menu.Item("HarassActive").GetValue<KeyBind>().Active && Menu.Item("ComboActive").GetValue<KeyBind>().Active && Player.Distance(RTarget, true) <= Math.Pow(R.Range, 2))
+            if (RTarget != null && (Menu.Item("HarassActive").GetValue<KeyBind>().Active || Menu.Item("LaneClearActive").GetValue<KeyBind>().Active) && Menu.Item("ComboActive").GetValue<KeyBind>().Active && Player.Distance(RTarget, true) <= Math.Pow(R.Range, 2))
             {
                     DFG.Cast(QTarget);
                     if (Menu.Item("DontR" + RTarget.BaseSkinName) != null && Menu.Item("DontR" + RTarget.BaseSkinName).GetValue<bool>() == false && UR) R.CastOnUnit(RTarget, Menu.Item("Packets").GetValue<bool>());
@@ -650,7 +652,10 @@ namespace GagongSyndra
                     }
                     //Ignite
                     if (Player.Distance(enemy, true) <= 600 * 600 && GetIgniteDamage(enemy) > enemy.Health)
-                        Player.SummonerSpellbook.CastSpell(IgniteSlot, enemy);
+                        if (Menu.Item("IgniteALLCD").GetValue<bool>()) { 
+                            if (!Q.IsReady() && !W.IsReady() && !E.IsReady() && !R.IsReady()) Player.SummonerSpellbook.CastSpell(IgniteSlot, enemy);
+                        }
+                        else Player.SummonerSpellbook.CastSpell(IgniteSlot, enemy);
                 }
 
             //Use E
@@ -841,6 +846,17 @@ namespace GagongSyndra
                     Drawing.DrawLine(SP.X, SP.Y, EP.X, EP.Y, 2, color);
 
                 }
+            }
+            if (Menu.Item("DrawWMAP").GetValue<bool>())
+            {
+                Color color2 = Color.FromArgb(100, 255, 0, 0); ;
+                var WTarget = SimpleTs.GetTarget(W.Range + W.Width, SimpleTs.DamageType.Magical);
+                PredictionOutput Pos2 = W.GetPrediction(WTarget, true);
+                if (Pos2.Hitchance >= HitChance.High)
+                {
+                    color2 = Color.FromArgb(100, 50, 80, 255); ;
+                }
+                Utility.DrawCircle(Pos2.UnitPosition, W.Width, color2);
             }
         }
     }
