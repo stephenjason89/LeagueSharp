@@ -118,7 +118,34 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="GagongSyndraWelcome" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>..\Resources\GagongSyndraWelcome.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  <data name="BallsToTheFace" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\BallsToTheFace.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="DieFucker" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\DieFucker.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="GoingSomewhereAsshole" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\GoingSomewhereAsshole.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="ILoveThisGame" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ILoveThisGame.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="ImKillingTheBitch" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\ImKillingTheBitch.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="OhDontYouDare" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\OhDontYouDare.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="OhIdiot" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\OhIdiot.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="Welcome" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\Welcome.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="WhosTheBitchNow" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\WhosTheBitchNow.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="YourDeadMeatAsshole" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>..\Resources\YourDeadMeatAsshole.wav;System.IO.MemoryStream, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
 </root>

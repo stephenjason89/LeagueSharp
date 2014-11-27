@@ -14,6 +14,7 @@
     <PreBuildEvent />
     <PostBuildEvent />
     <OutputPath>bin\Release</OutputPath>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -26,7 +27,6 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
@@ -95,9 +95,6 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Resources\GagongSyndraWelcome.wav" />
-  </ItemGroup>
-  <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5">
       <Visible>False</Visible>
       <ProductName>Microsoft .NET Framework 4.5 %28x86 and x64%29</ProductName>
@@ -113,6 +110,36 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\BallsToTheFace.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ImKillingTheBitch.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Welcome.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\DieFucker.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\GoingSomewhereAsshole.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\ILoveThisGame.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\OhDontYouDare.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\OhIdiot.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\WhosTheBitchNow.wav" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\YourDeadMeatAsshole.wav" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

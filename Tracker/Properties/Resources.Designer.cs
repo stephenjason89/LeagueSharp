@@ -118,6 +118,46 @@ namespace Tracker.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap hud1 {
+            get {
+                object obj = ResourceManager.GetObject("hud1", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap hud2 {
+            get {
+                object obj = ResourceManager.GetObject("hud2", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Map_trap {
+            get {
+                object obj = ResourceManager.GetObject("Map_trap", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Minimap_Ward_cait_trap {
+            get {
+                object obj = ResourceManager.GetObject("Minimap_Ward_cait_trap", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Minimap_Ward_Green_Enemy {
             get {
                 object obj = ResourceManager.GetObject("Minimap_Ward_Green_Enemy", resourceCulture);
@@ -131,6 +171,16 @@ namespace Tracker.Properties {
         internal static System.Drawing.Bitmap Minimap_Ward_Pink_Enemy {
             get {
                 object obj = ResourceManager.GetObject("Minimap_Ward_Pink_Enemy", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Minimap_Ward_teemo_trap {
+            get {
+                object obj = ResourceManager.GetObject("Minimap_Ward_teemo_trap", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }

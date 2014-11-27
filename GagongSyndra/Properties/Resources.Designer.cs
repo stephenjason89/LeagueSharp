@@ -63,9 +63,90 @@ namespace GagongSyndra.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
         /// </summary>
-        internal static System.IO.UnmanagedMemoryStream GagongSyndraWelcome {
+        internal static System.IO.UnmanagedMemoryStream BallsToTheFace {
             get {
-                return ResourceManager.GetStream("GagongSyndraWelcome", resourceCulture);
+                return ResourceManager.GetStream("BallsToTheFace", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream DieFucker {
+            get {
+                return ResourceManager.GetStream("DieFucker", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream GoingSomewhereAsshole {
+            get {
+                return ResourceManager.GetStream("GoingSomewhereAsshole", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream ILoveThisGame {
+            get {
+                return ResourceManager.GetStream("ILoveThisGame", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream ImKillingTheBitch {
+            get {
+                return ResourceManager.GetStream("ImKillingTheBitch", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream OhDontYouDare {
+            get {
+                return ResourceManager.GetStream("OhDontYouDare", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream OhIdiot {
+            get {
+                return ResourceManager.GetStream("OhIdiot", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream Welcome {
+            get {
+                return ResourceManager.GetStream("Welcome", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream WhosTheBitchNow {
+            get {
+                return ResourceManager.GetStream("WhosTheBitchNow", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.IO.UnmanagedMemoryStream similar to System.IO.MemoryStream.
+        /// </summary>
+        internal static System.IO.UnmanagedMemoryStream YourDeadMeatAsshole {
+            get {
+                return ResourceManager.GetStream("YourDeadMeatAsshole", resourceCulture);
             }
         }
     }

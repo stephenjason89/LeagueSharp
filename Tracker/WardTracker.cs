@@ -17,7 +17,10 @@ namespace Tracker
     {
         Green,
         Pink,
-        Trap,
+        TrapCaitlyn,
+        TrapTeemo,
+        TrapShaco,
+        TrapNidalee
     }
 
     internal class WardData
@@ -38,8 +41,12 @@ namespace Tracker
                         return Properties.Resources.Minimap_Ward_Green_Enemy;
                     case WardType.Pink:
                         return Properties.Resources.Minimap_Ward_Pink_Enemy;
+                    case WardType.TrapCaitlyn:
+                        return Properties.Resources.Minimap_Ward_cait_trap;
+                    case WardType.TrapTeemo:
+                        return Properties.Resources.Minimap_Ward_teemo_trap;
                     default:
-                        return Properties.Resources.Minimap_Ward_Green_Enemy;
+                        return Properties.Resources.Map_trap;
                 }
             }
         }
@@ -129,6 +136,13 @@ namespace Tracker
             //Create the minimap sprite.
 
             if (Range == 1100)
+            {
+
+                _minimapSprite = new Render.Sprite(WardData.Bitmap, MinimapPosition);
+                _minimapSprite.Scale = new Vector2(_scale, _scale);
+                _minimapSprite.Add(0);
+            }
+            else
             {
                 _minimapSprite = new Render.Sprite(WardData.Bitmap, MinimapPosition);
                 _minimapSprite.Scale = new Vector2(_scale, _scale);
@@ -336,7 +350,7 @@ namespace Tracker
                     ObjectBaseSkinName = "CaitlynTrap",
                     Range = 300,
                     SpellName = "CaitlynYordleTrap",
-                    Type = WardType.Trap
+                    Type = WardType.TrapCaitlyn
                 });
             PosibleWards.Add(
                 new WardData
@@ -345,7 +359,7 @@ namespace Tracker
                     ObjectBaseSkinName = "TeemoMushroom",
                     Range = 212,
                     SpellName = "BantamTrap",
-                    Type = WardType.Trap
+                    Type = WardType.TrapTeemo
                 });
             PosibleWards.Add(
                 new WardData
@@ -354,7 +368,7 @@ namespace Tracker
                     ObjectBaseSkinName = "ShacoBox",
                     Range = 212,
                     SpellName = "JackInTheBox",
-                    Type = WardType.Trap
+                    Type = WardType.TrapShaco
                 });
             PosibleWards.Add(
                 new WardData
@@ -363,7 +377,7 @@ namespace Tracker
                     ObjectBaseSkinName = "Nidalee_Spear",
                     Range = 212,
                     SpellName = "Bushwhack",
-                    Type = WardType.Trap
+                    Type = WardType.TrapNidalee
                 });
 
             #endregion
@@ -439,7 +453,7 @@ namespace Tracker
             }
             var wardObject = (Obj_AI_Base) sender;
 
-           
+            if (sender.IsAlly) return;
 
             foreach (var wardData in PosibleWards)
             {

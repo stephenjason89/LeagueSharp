@@ -146,6 +146,21 @@
   <ItemGroup>
     <None Include="Resources\ganks_hater\voice_on.wav" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Map_trap.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Minimap_Ward_cait_trap.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\Minimap_Ward_teemo_trap.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\hud1.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\hud2.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
