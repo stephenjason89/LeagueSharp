@@ -54,7 +54,7 @@ namespace GagongSyndra
             
             //Spells data
             Q = new Spell(SpellSlot.Q, 800);
-            Q.SetSkillshot(0.73f, 125f, float.MaxValue, false, SkillshotType.SkillshotCircle);
+            Q.SetSkillshot(0.75f, 125f, float.MaxValue, false, SkillshotType.SkillshotCircle);
 
             W = new Spell(SpellSlot.W, 930);
             W.SetSkillshot(0.25f, 140f, 1400f, false, SkillshotType.SkillshotCircle);
@@ -66,7 +66,7 @@ namespace GagongSyndra
             R.SetTargetted(0.5f, 1100f);
 
             QE = new Spell(SpellSlot.E, 1292);
-            QE.SetSkillshot(0.98f, 55f, 2000f, false, SkillshotType.SkillshotLine);
+            QE.SetSkillshot(0.98f, 50f, 2500f, false, SkillshotType.SkillshotLine);
 
 
             IgniteSlot = Player.GetSpellSlot("SummonerDot");
@@ -164,6 +164,8 @@ namespace GagongSyndra
             Menu.SubMenu("Misc").AddItem(new MenuItem("Packets", "Packet Casting").SetValue(false));
             Menu.SubMenu("Misc").AddItem(new MenuItem("IgniteALLCD", "Only ignite if all skills on CD").SetValue(false));
             Menu.SubMenu("Misc").AddItem(new MenuItem("OrbWAA", "AA while orbwalking").SetValue(true));
+            Menu.SubMenu("Misc").AddItem(new MenuItem("Sound1", "Startup Sound").SetValue(true));
+            Menu.SubMenu("Misc").AddItem(new MenuItem("Sound2", "In Game Sound").SetValue(true));
 
             //QE Settings
             Menu.AddSubMenu(new Menu("QE Settings", "QEsettings"));
@@ -204,7 +206,7 @@ namespace GagongSyndra
 
             //Add main menu
             Menu.AddToMainMenu();
-            playSound(welcome);
+            if (Menu.Item("Sound1").GetValue<bool>()) playSound(welcome);
             Game.OnGameUpdate += Game_OnGameUpdate;
             Drawing.OnDraw += Drawing_OnDraw;
             Obj_AI_Base.OnProcessSpellCast += Obj_AI_Base_OnProcessSpellCast;
@@ -225,7 +227,7 @@ namespace GagongSyndra
                 }
                 catch { }
             }
-            else if (Environment.TickCount - LastPlayedSound > 45000) 
+            else if (Environment.TickCount - LastPlayedSound > 45000 && Menu.Item("Sound2").GetValue<bool>()) 
             {
                 Random rnd = new Random();
                 switch (rnd.Next(1, 11))
@@ -450,7 +452,7 @@ namespace GagongSyndra
 
             if (E.IsReady() && Player.Distance(gapcloser.Sender, true) <= Math.Pow(QE.Range, 2) && gapcloser.Sender.IsValidTarget(QE.Range))
             {
-                if (Q.IsReady())
+                if (Q.IsReady() && Player.Spellbook.GetSpell(SpellSlot.Q).ManaCost + Player.Spellbook.GetSpell(SpellSlot.E).ManaCost <= Player.Mana)
                 {
                     UseQE((Obj_AI_Hero)gapcloser.Sender);
                 }
@@ -687,7 +689,7 @@ namespace GagongSyndra
             var RTarget = SimpleTs.GetTarget(R.Range, SimpleTs.DamageType.Magical);
             var QETarget = SimpleTs.GetTarget(QE.Range, SimpleTs.DamageType.Magical);
             bool UseR = false;
-            Vector3 gObjectPos = GetGrabableObjectPos(false);
+            //Vector3 gObjectPos = GetGrabableObjectPos(false);
             //Use DFG
             if (DFG.IsReady() && RTarget != null && GetComboDamage(RTarget, UQ, UW, UE, UR) + GetIgniteDamage(RTarget) > RTarget.Health)
             {
@@ -723,17 +725,16 @@ namespace GagongSyndra
                         }
                         else Player.SummonerSpellbook.CastSpell(IgniteSlot, enemy);
                 }
-
-            //Use QW if no grabbable objects nearby QWE Mana supported and enemy > 150 range
-            if (UW && !gObjectPos.To2D().IsValid() && UQE && W.IsReady() && Player.Spellbook.GetSpell(SpellSlot.Q).ManaCost + Player.Spellbook.GetSpell(SpellSlot.W).ManaCost + Player.Spellbook.GetSpell(SpellSlot.E).ManaCost <= Player.Mana && Player.Distance(QTarget, true) > Math.Pow(150, 2) && QTarget != null && Environment.TickCount - QWLastcast > Game.Ping +150)
-            {
-                    UseQ(QTarget);
-                    Utility.DelayAction.Add(Math.Max(0, (int)Q.Delay + Game.Ping), () => UseW(QETarget, QTarget));
-                    QWLastcast = Environment.TickCount;
-            }
+           //Use QW if no grabbable objects nearby QWE Mana supported and enemy > 150 range
+           // if (UW && UQE && W.IsReady() && Player.Spellbook.GetSpell(SpellSlot.Q).ManaCost + Player.Spellbook.GetSpell(SpellSlot.W).ManaCost + Player.Spellbook.GetSpell(SpellSlot.E).ManaCost <= Player.Mana && QTarget != null && Environment.TickCount - QWLastcast > Game.Ping +150)
+           //{
+           //        UseQ(QTarget);
+           //        Utility.DelayAction.Add(Math.Max(0, (int)Q.Delay + Game.Ping), () => UseW(QETarget, QTarget));
+           //        QWLastcast = Environment.TickCount;
+           // }
 
             //Use QE
-            else if (UQE && QETarget != null && Q.IsReady() && (E.IsReady() || (Player.Spellbook.GetSpell(SpellSlot.E).CooldownExpires - Game.Time < 1 && Player.Spellbook.GetSpell(SpellSlot.E).Level > 0)) && Player.Spellbook.GetSpell(SpellSlot.Q).ManaCost + Player.Spellbook.GetSpell(SpellSlot.E).ManaCost <= Player.Mana)
+            if (UQE && QETarget != null && Q.IsReady() && (E.IsReady() || (Player.Spellbook.GetSpell(SpellSlot.E).CooldownExpires - Game.Time < 1 && Player.Spellbook.GetSpell(SpellSlot.E).Level > 0)) && Player.Spellbook.GetSpell(SpellSlot.Q).ManaCost + Player.Spellbook.GetSpell(SpellSlot.E).ManaCost <= Player.Mana)
             {
                     UseQE(QETarget);
             } 
@@ -819,11 +820,11 @@ namespace GagongSyndra
         private static void UseQE(Obj_AI_Hero Target)
         {
             if (!Q.IsReady() || !E.IsReady()) return;
-            Vector3 SPos = Prediction.GetPrediction(Target, Q.Delay + E.Delay + (Player.Distance(Target)-E.Range) / QE.Speed).UnitPosition;
+            Vector3 SPos = Prediction.GetPrediction(Target, Q.Delay).UnitPosition;
             if (Player.Distance(SPos, true) > Math.Pow(E.Range, 2))
             {
                 Vector3 orb = Player.ServerPosition + Vector3.Normalize(SPos - Player.ServerPosition) * E.Range;
-                QE.Delay = Q.Delay + E.Delay + Player.Distance(orb) / E.Speed;
+                QE.Delay = Player.Distance(orb) / E.Speed;
                 var TPos = QE.GetPrediction(Target);
                 if (TPos.Hitchance >= HitChance.Medium)
                 {
@@ -926,14 +927,15 @@ namespace GagongSyndra
             // Draw QE MAP
             if (Menu.Item("DrawQEMAP").GetValue<bool>()) { 
                 var QETarget = SimpleTs.GetTarget(QE.Range, SimpleTs.DamageType.Magical);
-                Vector3 SPos = Prediction.GetPrediction(QETarget, Q.Delay + E.Delay + (Player.Distance(QETarget) - E.Range) / QE.Speed).UnitPosition;
+                Vector3 SPos = Prediction.GetPrediction(QETarget, Q.Delay).UnitPosition;
                 if (Player.Distance(SPos, true) > Math.Pow(E.Range, 2) && (E.IsReady() || Player.Spellbook.GetSpell(SpellSlot.E).CooldownExpires - Game.Time < 2) && Player.Spellbook.GetSpell(SpellSlot.E).Level>0)
                 {
                     Color color = Color.Red;
                     Vector3 orb = Player.Position + Vector3.Normalize(SPos - Player.Position) * E.Range;
-                    QE.Delay = Q.Delay + E.Delay + Player.Distance(orb) / E.Speed;
+                    QE.Delay = Player.Distance(orb) / E.Speed;
                     var TPos = QE.GetPrediction(QETarget);
                     if (TPos.Hitchance >= HitChance.Medium) color = Color.Green;
+                    if(Player.Spellbook.GetSpell(SpellSlot.Q).ManaCost + Player.Spellbook.GetSpell(SpellSlot.E).ManaCost > Player.Mana) color = Color.DarkBlue;
                     Vector3 Pos = Player.Position + Vector3.Normalize(TPos.UnitPosition - Player.Position) * 700;
                     Utility.DrawCircle(Pos, Q.Width, color);
                     Utility.DrawCircle(TPos.UnitPosition, Q.Width / 2, color);
@@ -944,6 +946,7 @@ namespace GagongSyndra
                     Drawing.DrawLine(SP.X, SP.Y, EP.X, EP.Y, 2, color);
 
                 }
+                
             }
             if (Menu.Item("DrawWMAP").GetValue<bool>() && Player.Spellbook.GetSpell(SpellSlot.W).Level > 0)
             {
