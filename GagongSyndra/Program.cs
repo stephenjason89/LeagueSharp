@@ -97,9 +97,9 @@ namespace GagongSyndra
             //Base menu
             Menu = new Menu("GagongSyndra", "GagongSyndra", true);
             orbwalkerMenu = new Menu("Orbwalker", "Orbwalker");
-            //SimpleTs
-            Menu.AddSubMenu(new Menu("SimpleTs", "SimpleTs"));
-            SimpleTs.AddToMenu(Menu.SubMenu("SimpleTs"));
+            //no longer SimpleTS, now TargetSelector
+            Menu.AddSubMenu(new Menu("TargetSelector", "TargetSelector"));
+            TargetSelector.AddToMenu(Menu.SubMenu("TargetSelector"));
 
             //Orbwalker
             orbwalkerMenu.AddItem(new MenuItem("Orbwalker_Mode", "Regular Orbwalker").SetValue(false));
@@ -800,10 +800,10 @@ namespace GagongSyndra
         private static void UseSpells(bool UQ, bool UW, bool UE, bool UR, bool UQE)
         {   
             //Set Target
-            var QTarget = SimpleTs.GetTarget(Q.Range + 25f, SimpleTs.DamageType.Magical);
-            var WTarget = SimpleTs.GetTarget(W.Range + W.Width, SimpleTs.DamageType.Magical);
-            var RTarget = SimpleTs.GetTarget(R.Range, SimpleTs.DamageType.Magical);
-            var QETarget = SimpleTs.GetTarget(QE.Range, SimpleTs.DamageType.Magical);
+            var QTarget = TargetSelector.GetTarget(Q.Range + 25f, TargetSelector.DamageType.Magical);
+            var WTarget = TargetSelector.GetTarget(W.Range + W.Width, TargetSelector.DamageType.Magical);
+            var RTarget = TargetSelector.GetTarget(R.Range, TargetSelector.DamageType.Magical);
+            var QETarget = TargetSelector.GetTarget(QE.Range, TargetSelector.DamageType.Magical);
             bool UseR = false;
             //Use DFG
             if (DFG.IsReady() && RTarget != null && GetComboDamage(RTarget, UQ, UW, UE, UR) + GetIgniteDamage(RTarget) > RTarget.Health && detectCollision(RTarget))
@@ -1056,7 +1056,7 @@ namespace GagongSyndra
             }
             // Draw QE MAP
             if (Menu.Item("DrawQEMAP").GetValue<bool>()) { 
-                var QETarget = SimpleTs.GetTarget(QE.Range, SimpleTs.DamageType.Magical);
+                var QETarget = TargetSelector.GetTarget(QE.Range, TargetSelector.DamageType.Magical);
                 Vector3 SPos = Prediction.GetPrediction(QETarget, Q.Delay + E.Delay).UnitPosition;
                 if (Player.Distance(SPos, true) > Math.Pow(E.Range, 2) && (E.IsReady() || Player.Spellbook.GetSpell(SpellSlot.E).CooldownExpires - Game.Time < 2) && Player.Spellbook.GetSpell(SpellSlot.E).Level>0)
                 {
@@ -1081,7 +1081,7 @@ namespace GagongSyndra
             if (Menu.Item("DrawWMAP").GetValue<bool>() && Player.Spellbook.GetSpell(SpellSlot.W).Level > 0)
             {
                 Color color2 = Color.FromArgb(100, 255, 0, 0); ;
-                var WTarget = SimpleTs.GetTarget(W.Range + W.Width, SimpleTs.DamageType.Magical);
+                var WTarget = TargetSelector.GetTarget(W.Range + W.Width, TargetSelector.DamageType.Magical);
                 PredictionOutput Pos2 = W.GetPrediction(WTarget, true);
                 if (Pos2.Hitchance >= HitChance.High)
                 {
