@@ -97,9 +97,9 @@ namespace GagongSyndra
             //Base menu
             Menu = new Menu("GagongSyndra", "GagongSyndra", true);
             orbwalkerMenu = new Menu("Orbwalker", "Orbwalker");
-            //SimpleTs
-            Menu.AddSubMenu(new Menu("SimpleTs", "SimpleTs"));
-            SimpleTs.AddToMenu(Menu.SubMenu("SimpleTs"));
+            //TargetSelector
+            Menu.AddSubMenu(new Menu("TargetSelector", "TargetSelector"));
+            TargetSelector.AddToMenu(Menu.SubMenu("TargetSelector"));
 
             //Orbwalker
             orbwalkerMenu.AddItem(new MenuItem("Orbwalker_Mode", "Regular Orbwalker").SetValue(false));
@@ -642,7 +642,7 @@ namespace GagongSyndra
 
         private static float GetIgniteDamage(Obj_AI_Hero enemy)
         {
-            if (IgniteSlot == SpellSlot.Unknown || Player.SummonerSpellbook.CanUseSpell(IgniteSlot) != SpellState.Ready) return 0f;
+            if (IgniteSlot == SpellSlot.Unknown || Player.Spellbook.CanUseSpell(IgniteSlot) != SpellState.Ready) return 0f;
             return (float)Player.GetSummonerSpellDamage(enemy, Damage.SummonerSpell.Ignite);
         }
 
@@ -735,7 +735,7 @@ namespace GagongSyndra
                     bool useR = Menu.Item("DontR" + enemy.BaseSkinName) != null && Menu.Item("DontR" + enemy.BaseSkinName).GetValue<bool>() == false;
                     bool Rflash = GetComboDamage(enemy, Menu.Item("UseQKS").GetValue<bool>(), false, Menu.Item("UseEKS").GetValue<bool>(), false, false) < enemy.Health;
                     PredictionOutput ePos = R.GetPrediction(enemy);
-                    if ((FlashSlot != SpellSlot.Unknown || Player.SummonerSpellbook.CanUseSpell(FlashSlot) == SpellState.Ready) && UseFlash
+                    if ((FlashSlot != SpellSlot.Unknown || Player.Spellbook.CanUseSpell(FlashSlot) == SpellState.Ready) && UseFlash
                         && Player.Distance(ePos.UnitPosition, true) <= Math.Pow(Q.Range + 25f + 395, 2) && Player.Distance(ePos.UnitPosition, true) > Math.Pow(Q.Range + 25f + 200, 2))
 
                     if ((GetComboDamage(enemy, Menu.Item("UseQKS").GetValue<bool>(), false, Menu.Item("UseEKS").GetValue<bool>(), false, false) > enemy.Health && Menu.Item("UseFK1").GetValue<bool>())
@@ -760,7 +760,7 @@ namespace GagongSyndra
                                     { 
                                         if (useR)
                                         {   //Use Ult after flash if can't be killed by QE
-                                            Player.SummonerSpellbook.CastSpell(FlashSlot, FlashPos);
+                                            Player.Spellbook.CastSpell(FlashSlot, FlashPos);
                                             UseSpells(false, //Q
                                             false, //W
                                             false, //E
@@ -772,7 +772,7 @@ namespace GagongSyndra
                                     }
                                     else
                                     {   //Q & E after flash
-                                        Player.SummonerSpellbook.CastSpell(FlashSlot, FlashPos);
+                                        Player.Spellbook.CastSpell(FlashSlot, FlashPos);
                                     }
                                 FlashLastCast = Environment.TickCount;
                                 }
@@ -800,10 +800,10 @@ namespace GagongSyndra
         private static void UseSpells(bool UQ, bool UW, bool UE, bool UR, bool UQE)
         {   
             //Set Target
-            var QTarget = SimpleTs.GetTarget(Q.Range + 25f, SimpleTs.DamageType.Magical);
-            var WTarget = SimpleTs.GetTarget(W.Range + W.Width, SimpleTs.DamageType.Magical);
-            var RTarget = SimpleTs.GetTarget(R.Range, SimpleTs.DamageType.Magical);
-            var QETarget = SimpleTs.GetTarget(QE.Range, SimpleTs.DamageType.Magical);
+            var QTarget = TargetSelector.GetTarget(Q.Range + 25f, TargetSelector.DamageType.Magical);
+            var WTarget = TargetSelector.GetTarget(W.Range + W.Width, TargetSelector.DamageType.Magical);
+            var RTarget = TargetSelector.GetTarget(R.Range, TargetSelector.DamageType.Magical);
+            var QETarget = TargetSelector.GetTarget(QE.Range, TargetSelector.DamageType.Magical);
             bool UseR = false;
             //Use DFG
             if (DFG.IsReady() && RTarget != null && GetComboDamage(RTarget, UQ, UW, UE, UR) + GetIgniteDamage(RTarget) > RTarget.Health && detectCollision(RTarget))
@@ -844,9 +844,9 @@ namespace GagongSyndra
                     if (Player.Distance(enemy, true) <= 600 * 600 && GetIgniteDamage(enemy) > enemy.Health)
                         if (Menu.Item("IgniteALLCD").GetValue<bool>())
                         {
-                            if (!Q.IsReady() && !W.IsReady() && !E.IsReady() && !R.IsReady() && Environment.TickCount - R.LastCastAttemptT > Game.Ping + 750 && Environment.TickCount - QE.LastCastAttemptT > Game.Ping + 750 && Environment.TickCount - W.LastCastAttemptT > Game.Ping + 750) Player.SummonerSpellbook.CastSpell(IgniteSlot, enemy);
+                            if (!Q.IsReady() && !W.IsReady() && !E.IsReady() && !R.IsReady() && Environment.TickCount - R.LastCastAttemptT > Game.Ping + 750 && Environment.TickCount - QE.LastCastAttemptT > Game.Ping + 750 && Environment.TickCount - W.LastCastAttemptT > Game.Ping + 750) Player.Spellbook.CastSpell(IgniteSlot, enemy);
                         }
-                        else Player.SummonerSpellbook.CastSpell(IgniteSlot, enemy);
+                        else Player.Spellbook.CastSpell(IgniteSlot, enemy);
                 }
             
             //Use QE
@@ -1056,7 +1056,7 @@ namespace GagongSyndra
             }
             // Draw QE MAP
             if (Menu.Item("DrawQEMAP").GetValue<bool>()) { 
-                var QETarget = SimpleTs.GetTarget(QE.Range, SimpleTs.DamageType.Magical);
+                var QETarget = TargetSelector.GetTarget(QE.Range, TargetSelector.DamageType.Magical);
                 Vector3 SPos = Prediction.GetPrediction(QETarget, Q.Delay + E.Delay).UnitPosition;
                 if (Player.Distance(SPos, true) > Math.Pow(E.Range, 2) && (E.IsReady() || Player.Spellbook.GetSpell(SpellSlot.E).CooldownExpires - Game.Time < 2) && Player.Spellbook.GetSpell(SpellSlot.E).Level>0)
                 {
@@ -1081,7 +1081,7 @@ namespace GagongSyndra
             if (Menu.Item("DrawWMAP").GetValue<bool>() && Player.Spellbook.GetSpell(SpellSlot.W).Level > 0)
             {
                 Color color2 = Color.FromArgb(100, 255, 0, 0); ;
-                var WTarget = SimpleTs.GetTarget(W.Range + W.Width, SimpleTs.DamageType.Magical);
+                var WTarget = TargetSelector.GetTarget(W.Range + W.Width, TargetSelector.DamageType.Magical);
                 PredictionOutput Pos2 = W.GetPrediction(WTarget, true);
                 if (Pos2.Hitchance >= HitChance.High)
                 {
